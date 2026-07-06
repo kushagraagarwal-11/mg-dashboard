@@ -214,14 +214,15 @@ function render(D){
   var vAcc=EE.map(function(x){return Math.round(100*x.slot/(x.recv||1));});
   var vAsgn=EE.map(function(x){return Math.round(100*x.assign/(x.recv||1));});
   var vTat=EE.map(function(x){return x.t_ts;}),vNTat=NN.map(function(x){return x.t_ts;});
-  var last=EE.length-1;
+  var last=EE.length-1, mat=Math.max(0,EE.length-2); // rate metrics: latest MATURED day (fresh days always sag)
   var tiles='<div class=tiles>'+
    tile('Bookings / day',n(vRecv[last]),vRecv,'#D9008D','up')+
-   tile('Install %','<span>'+vInst[last]+'<span class=un>%</span></span>',vInst,'#D9008D','up')+
-   tile('Confirm %','<span>'+vConf[last]+'<span class=un>%</span></span>',vConf,'#D9008D','up')+
+   tile('Install % · matured','<span>'+vInst[mat]+'<span class=un>%</span></span>',vInst.slice(0,mat+1),'#D9008D','up')+
+   tile('Confirm % · matured','<span>'+vConf[mat]+'<span class=un>%</span></span>',vConf.slice(0,mat+1),'#D9008D','up')+
    tile('Accept %','<span>'+vAcc[last]+'<span class=un>%</span></span>',vAcc,'#D9008D','up')+
    tile('Task → slot',ft(vTat[last]),vTat,'#D9008D','down')+
-  '</div>';
+  '</div>'+
+  '<div style="font-size:11.5px;color:var(--faint);font-weight:600;margin:-6px 2px 14px">Install/Confirm tiles show the latest matured day — the newest day&#39;s bookings are still in flight and always read low.</div>';
   function two(id,vE,vN,fmt){return lineChart(id,days,[{n:'Enrolled MG',c:'#D9008D',v:vE},{n:'Non-enrolled',c:'#2563EB',v:vN}],fmt);}
   function preNote(txt){return txt!=null?' · PRE avg <b>'+txt+'</b>':'';}
   document.getElementById('tr').innerHTML=tiles+
