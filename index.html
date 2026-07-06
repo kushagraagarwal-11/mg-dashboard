@@ -95,12 +95,12 @@ function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="d
 
 /* ---- the 8 funnel metrics, one definition everywhere ---- */
 var METRICS=[
- {k:'recv_d', lab:'Bookings received <span class=of>/ day</span>', fmt:function(v){return v==null?'—':v;}, good:'up'},
+ {k:'recv_d', lab:'Bookings received <span class=of>/ day (grey = window total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
  {k:'slot_pct',    lab:'Slot proposed / CSP accepted <span class=of>% of received</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
  {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of slot proposed</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
  {k:'assign_pct',  lab:'Technician assigned <span class=of>% of confirmed</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
- {k:'install_pct', lab:'Installed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
- {k:'tat_ta', lab:'TAT · first task → CSP accepted <span class=of>incl. reassignment wait</span>', fmt:ft, good:'down', tat:1},
+ {k:'install_pct', lab:'Installed <span class=of>% of assigned</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
+ {k:'tat_ta', lab:'TAT · task received → CSP accepted', fmt:ft, good:'down', tat:1},
  {k:'tat_ca', lab:'TAT · slot confirmed → tech assigned', fmt:ft, good:'down', tat:1},
  {k:'tat_ai', lab:'TAT · assigned → installed', fmt:ft, good:'down', tat:1}];
 
@@ -139,12 +139,12 @@ function funnelBars(Q){
  var shares=[100,Q.slot_pct||0];
  shares.push(shares[1]*(Q.confirm_pct||0)/100);
  shares.push(shares[2]*(Q.assign_pct||0)/100);
- shares.push(Q.install_pct||0);
+ shares.push(shares[3]*(Q.install_pct||0)/100);
  var rows=[['Bookings received','',n(Q.received)],
   ['Slot proposed / accepted <span class=mb>MBG</span>',(Q.slot_pct||'—')+'% of received',n(Q.slot)],
   ['Customer confirmed slot',(Q.confirm_pct||'—')+'% of proposed',n(Q.confirm)],
   ['Technician assigned <span class=mb>MBG</span>',(Q.assign_pct||'—')+'% of confirmed',n(Q.assign)],
-  ['Installed',(Q.install_pct||'—')+'% of received',n(Q.install)]];
+  ['Installed',(Q.install_pct||'—')+'% of assigned',n(Q.install)]];
  var s='<div class=fnl>';
  rows.forEach(function(r,i){var w=Math.max(3,shares[i]);
   s+='<div class=frow><span class=nm>'+r[0]+'</span><span class=track><span class=fill style="width:'+w+'%"></span></span>'+
@@ -257,11 +257,12 @@ function showDrill(d,hr){
  }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
-function prep(blk,fixedDays){ // add recv_d = bookings/day to each PRE/POST block
+function prep(blk,fixedDays){ // recv_d = bookings/day (integer) + install% re-based on ASSIGNED
  if(!blk)return blk;
  ['PRE','POST'].forEach(function(p){var m=blk[p];if(!m)return;
-  if(m.csp_days&&m.csps)m.recv_d=Math.round(10*m.received*m.csps/m.csp_days)/10;
-  else if(fixedDays)m.recv_d=Math.round(10*m.received/fixedDays)/10;});
+  if(m.csp_days&&m.csps)m.recv_d=Math.round(m.received*m.csps/m.csp_days);
+  else if(fixedDays)m.recv_d=Math.round(m.received/fixedDays);
+  m.install_pct=(m.assign?Math.round(1000*m.install/m.assign)/10:null);});
  return blk;
 }
 function render(D){
