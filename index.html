@@ -100,7 +100,7 @@ var METRICS=[
  {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of slot proposed</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
  {k:'assign_pct',  lab:'Technician assigned <span class=of>% of confirmed</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
  {k:'install_pct', lab:'Installed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
- {k:'tat_ta', lab:'TAT · task created → slot proposed', fmt:ft, good:'down', tat:1},
+ {k:'tat_ta', lab:'TAT · first task → CSP accepted <span class=of>incl. reassignment wait</span>', fmt:ft, good:'down', tat:1},
  {k:'tat_ca', lab:'TAT · slot confirmed → tech assigned', fmt:ft, good:'down', tat:1},
  {k:'tat_ai', lab:'TAT · assigned → installed', fmt:ft, good:'down', tat:1}];
 
@@ -288,7 +288,7 @@ function render(D){
  var va=D.tab3_view_action||{};
  var vastrip=(va.median_min!=null)?
   '<div class=card><div class=ch2>After viewing the banner → first action on a lead</div>'+
-  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing</div></div>':'';
+  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing · <span style="color:var(--faint)">includes waiting for the next lead to arrive — it is not pure response speed</span></div></div>':'';
  var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads excluded — no lead flow in that state, nothing to compare</span></div></div><div class=grid>';
  (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=cutCard(s.key,s.csps,s.data);});
  h3+='</div><div class=card style="padding:14px 20px;margin-top:14px"><div class=ch2>By engagement depth</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div></div><div class=grid>';
