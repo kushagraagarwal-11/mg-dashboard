@@ -38,6 +38,7 @@ table.t{border-collapse:collapse;width:100%}
 .t td .a{font-size:11.5px;color:var(--faint);font-weight:600;margin-left:5px}
 .t td.pre .p{color:#8a90a0}.t td.pre .a{color:#aeb4c0}
 .t td.non .p{font-size:15px;color:var(--sub)}.t td.non .a{color:#aeb4c0}
+.t td.step{font-size:14.5px;font-weight:800;color:var(--warm);text-align:right}.t th.stp{color:var(--warm);text-align:right}
 .t tr.div td{border-top:1px solid var(--line);padding-top:13px}
 .t tr.tat td{color:var(--sub)}.t tr.tat td.l{color:#5a6472;font-weight:600}.t tr.tat td .p{font-size:15px;font-weight:750;color:#39414f}
 .dl{font-size:11.5px;font-weight:750;display:inline-flex;align-items:center;gap:2px}.up{color:var(--pos)}.dn{color:var(--neg)}.fl{color:var(--faint)}
@@ -71,8 +72,8 @@ var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 function fw(w){if(!w)return '—';function p(x){var a=x.split('-');return{d:+a[2],m:MO[+a[1]-1]};}var a=p(w[0]),b=p(w[1]);return a.m===b.m?(a.d+'–'+b.d+' '+b.m):(a.d+' '+a.m+'–'+b.d+' '+b.m);}
 function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="dl fl">—</span>';var pc=Math.round((post-pre)/Math.abs(pre)*100);if(pc===0)return '<span class="dl fl">0%</span>';var up=good==='up'?pc>0:pc<0;return '<span class="dl '+(up?'up':'dn')+'">'+(pc>0?'▲':'▼')+Math.abs(pc)+'%</span>';}
 function cP(pct,abs,cls){cls=cls||'post';if(pct==null)return '<td class='+cls+'><span class=p>'+n(abs)+'</span></td>';return '<td class='+cls+'><span class=p>'+pct+'%</span><span class=a>'+n(abs)+'</span></td>';}
-function pctRow(lab,PE,QE,QN,pk,ak,good){good=good||'up';return '<tr><td class=l>'+lab+'</td>'+cP(PE[pk],PE[ak],'pre')+cP(QE[pk],QE[ak],'post')+'<td>'+dl(PE[pk],QE[pk],good)+'</td>'+cP(QN[pk],QN[ak],'non')+'</tr>';}
-function tatRow(lab,PE,QE,QN,k){return '<tr class=tat><td class=l>'+lab+'</td><td class=pre><span class=p>'+ft(PE[k])+'</span></td><td class=post><span class=p>'+ft(QE[k])+'</span></td><td>'+dl(PE[k],QE[k],'down')+'</td><td class=non><span class=p>'+ft(QN[k])+'</span></td></tr>';}
+function pctRow(lab,PE,QE,QN,pk,ak,good,step){good=good||'up';return '<tr><td class=l>'+lab+'</td><td class=step>'+(step!=null?step+'%':'')+'</td>'+cP(PE[pk],PE[ak],'pre')+cP(QE[pk],QE[ak],'post')+'<td>'+dl(PE[pk],QE[pk],good)+'</td>'+cP(QN[pk],QN[ak],'non')+'</tr>';}
+function tatRow(lab,PE,QE,QN,k){return '<tr class=tat><td class=l>'+lab+'</td><td class=step></td><td class=pre><span class=p>'+ft(PE[k])+'</span></td><td class=post><span class=p>'+ft(QE[k])+'</span></td><td>'+dl(PE[k],QE[k],'down')+'</td><td class=non><span class=p>'+ft(QN[k])+'</span></td></tr>';}
 
 // ---- multi-series line chart (sharp) ----
 function lineChart(days,series,fmt,unitLine){
@@ -81,7 +82,7 @@ function lineChart(days,series,fmt,unitLine){
  var x=function(i){return padL+(days.length<2?iw/2:iw*i/(days.length-1));},y=function(v){return padT+ih-(v/mx)*ih;};
  var g='';for(var k=0;k<=4;k++){var gv=mx*k/4,gy=padT+ih-(k/4)*ih;g+='<line x1='+padL+' y1='+gy.toFixed(1)+' x2='+(W-padR)+' y2='+gy.toFixed(1)+' stroke="#eef0f4"/>'+'<text x='+(padL-8)+' y='+(gy+4).toFixed(1)+' text-anchor=end fill="#8a92a1" font-size=10.5>'+fmt(gv)+'</text>';}
  var xl='';days.forEach(function(d,i){xl+='<text x='+x(i).toFixed(1)+' y='+(H-9)+' text-anchor=middle fill="#8a92a1" font-size=10.5>'+d+'</text>';});
- var paths='';series.forEach(function(s){var p='',dots='';s.v.forEach(function(v,i){if(v==null)return;p+=(p?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';dots+='<circle cx='+x(i).toFixed(1)+' cy='+y(v).toFixed(1)+' r=3 fill="'+s.c+'"/>';});paths+='<path d="'+p+'" fill=none stroke="'+s.c+'" stroke-width=2.2 stroke-linejoin=round stroke-linecap=round/>'+dots;});
+ var paths='';series.forEach(function(s){var p='',dots='';s.v.forEach(function(v,i){if(v==null)return;p+=(p?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';dots+='<circle cx='+x(i).toFixed(1)+' cy='+y(v).toFixed(1)+' r=3 fill="'+s.c+'"/>';});paths+='<path d="'+p+'" fill="none" stroke="'+s.c+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>'+dots;});
  var lg='<div class=lgd>'+series.map(function(s){return '<span><span class=dot style="background:'+s.c+'"></span>'+s.n+'</span>';}).join('')+'</div>';
  return lg+'<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+paths+xl+'</svg></div>';
 }
@@ -103,14 +104,15 @@ function render(D){
  // ---- FUNNEL ----
  var stg=[['Bookings received',100,QE.received_d],['CSP accepted / slot proposed',QE.slot_pct,QE.slot_d],['Slot confirmed by customer',QE.confirm_pct,QE.confirm_d],['Technician assigned',QE.assign_pct,QE.assign_d],['Installed',QE.install_pct,QE.install_d]];
  var vf='<div class=fnl>';stg.forEach(function(s){var w=Math.max(3,s[1]);vf+='<div class=frow2><span class=nm>'+s[0]+'</span><span class=track><span class=fill style="width:'+w+'%"></span></span><span class=val><span class=vp>'+s[1]+'%</span><span class=va>'+n(s[2])+'/day</span></span></div>';});vf+='</div>';
- var tbl='<table class=t><thead><tr><th class=l>Stage</th><th>Enrolled PRE</th><th>Enrolled POST</th><th>Δ vol</th><th>Non-enrolled</th></tr></thead><tbody>'+
-  pctRow('Bookings received / day',PE,QE,QN,null,'received_d')+
-  pctRow('CSP accepted / slot proposed',PE,QE,QN,'slot_pct','slot_d')+
-  pctRow('Slot confirmed by customer',PE,QE,QN,'confirm_pct','confirm_d')+
-  pctRow('Technician assigned',PE,QE,QN,'assign_pct','assign_d')+
-  pctRow('Installed',PE,QE,QN,'install_pct','install_d')+
-  '<tr class=div><td class=l>Install rate <span style="color:var(--faint);font-weight:600">(of confirmed)</span></td><td class=pre><span class=p>'+PE.install_ratio+'%</span></td><td class=post><span class=p>'+QE.install_ratio+'%</span></td><td>'+dl(PE.install_ratio,QE.install_ratio,'up')+'</td><td class=non><span class=p>'+QN.install_ratio+'%</span></td></tr>'+
-  '<tr><td class=l>CSP decline rate <span style="color:var(--faint);font-weight:600">(of leads offered)</span></td><td class=pre><span class=p>'+PE.decline_pct+'%</span></td><td class=post><span class=p>'+QE.decline_pct+'%</span></td><td>'+dl(PE.decline_pct,QE.decline_pct,'down')+'</td><td class=non><span class=p>'+QN.decline_pct+'%</span></td></tr>'+
+ var st_s=QE.slot_pct,st_c=(QE.slot_d?Math.round(100*QE.confirm_d/QE.slot_d):null),st_a=(QE.confirm_d?Math.round(100*QE.assign_d/QE.confirm_d):null),st_i=(QE.assign_d?Math.round(100*QE.install_d/QE.assign_d):null);
+ var tbl='<table class=t><thead><tr><th class=l>Stage</th><th class=stp>↓ conv. vs prev</th><th>Enrolled PRE</th><th>Enrolled POST</th><th>Δ vol</th><th>Non-enrolled</th></tr></thead><tbody>'+
+  pctRow('Bookings received / day',PE,QE,QN,null,'received_d',null,null)+
+  pctRow('CSP accepted / slot proposed',PE,QE,QN,'slot_pct','slot_d','up',st_s)+
+  pctRow('Slot confirmed by customer',PE,QE,QN,'confirm_pct','confirm_d','up',st_c)+
+  pctRow('Technician assigned',PE,QE,QN,'assign_pct','assign_d','up',st_a)+
+  pctRow('Installed',PE,QE,QN,'install_pct','install_d','up',st_i)+
+  '<tr class=div><td class=l>Install rate <span style="color:var(--faint);font-weight:600">(of confirmed)</span></td><td class=step></td><td class=pre><span class=p>'+PE.install_ratio+'%</span></td><td class=post><span class=p>'+QE.install_ratio+'%</span></td><td>'+dl(PE.install_ratio,QE.install_ratio,'up')+'</td><td class=non><span class=p>'+QN.install_ratio+'%</span></td></tr>'+
+  '<tr><td class=l>CSP decline rate <span style="color:var(--faint);font-weight:600">(of leads offered)</span></td><td class=step></td><td class=pre><span class=p>'+PE.decline_pct+'%</span></td><td class=post><span class=p>'+QE.decline_pct+'%</span></td><td>'+dl(PE.decline_pct,QE.decline_pct,'down')+'</td><td class=non><span class=p>'+QN.decline_pct+'%</span></td></tr>'+
   tatRow('Task created → slot proposed',PE,QE,QN,'tat_task_slot')+
   tatRow('Slot proposed → customer confirmed',PE,QE,QN,'tat_slot_confirm')+
   tatRow('Customer confirmed → technician assigned',PE,QE,QN,'tat_confirm_assign')+
@@ -118,7 +120,7 @@ function render(D){
   '</tbody></table>';
  document.getElementById('fn').innerHTML='<div class=card><div class=ch2>Booking → Install funnel</div><div class=csub>Enrolled MG CSPs, POST window · <b>%</b> = share of bookings received</div>'+vf+'</div>'+
   '<div class=card><div class=ch2>Stage detail · enrolled PRE vs POST vs non-enrolled</div><div class=csub>Big number = % (of bookings received) · small = per-day volume</div>'+tbl+
-  '<div class=note>Two install figures, both correct: <b>26%</b> = installed ÷ bookings received (funnel position); <b>'+QE.install_ratio+'%</b> = installed ÷ confirmed (install-rate KPI). TATs are median stage-to-stage from the connection state history. Decline = share of leads offered to a CSP that the CSP declined (counted across all offers, since a decline re-allocates).</div></div>';
+  '<div class=note>Big % = share of bookings received (funnel position). <b style="color:var(--warm)">↓ conv. vs prev</b> = conversion from the immediately previous stage (step drop-off). Two install figures, both right: <b>26%</b> = installed ÷ received; <b>'+QE.install_ratio+'%</b> = installed ÷ confirmed. TATs = median stage-to-stage from the connection state history. Decline = share of leads offered to a CSP that they declined (counted across all offers, since a decline re-allocates).</div></div>';
  // ---- COHORTS ----
  var C=D.cohorts||[];var ct='<table class="t co"><thead><tr><th class=l>Cohort (booking day)</th><th>Bookings</th><th>Accepted</th><th>Confirmed</th><th>Assigned</th><th>Installed</th></tr></thead><tbody>';
  C.forEach(function(c){var tag=c.lag<=2?'fresh':(c.lag>=7?'matured':'');var op=Math.min(1,c.install_pct/45),bg='rgba(6,135,78,'+(0.08+0.42*op).toFixed(2)+')';
@@ -126,16 +128,23 @@ function render(D){
  ct+='</tbody></table>';
  document.getElementById('co').innerHTML='<div class=card><div class=ch2>Daily cohorts · funnel by booking-day maturity</div><div class=csub>Each row = bookings received that day &amp; how far they&#39;ve progressed <b>as of now</b> (% of that day&#39;s bookings)</div>'+ct+
   '<div class=note><b>Read for maturity, not performance.</b> Recent cohorts (D-1/D-2) are still in-flight — low install % just means their bookings haven&#39;t had time to install yet. Compare same-age cohorts (D-7 vs D-14) for real conversion.</div></div>';
- // ---- TRENDS ----
- var dd=D.daily||[];var days=dd.map(function(x){return x.d;});
- if(!dd.length){document.getElementById('tr').innerHTML='<div class=card>No trend data yet.</div>';}
+ // ---- TRENDS (comparative: enrolled MG vs non-enrolled) ----
+ var EE=D.daily||[],NN=D.daily_non||[];var days=EE.map(function(x){return x.d;});
+ if(!EE.length){document.getElementById('tr').innerHTML='<div class=card>No trend data yet.</div>';}
  else{
-  var vol=barLine(days,dd.map(function(x){return x.recv;}),dd.map(function(x){var i=D.installs_daily.find(function(z){return z.d===x.d;});return i?i.e:0;}));
-  var conv=lineChart(days,[{n:'Accepted',c:'#4f46e5',v:dd.map(function(x){return Math.round(100*x.slot/(x.recv||1));})},{n:'Confirmed',c:'#7c3aed',v:dd.map(function(x){return Math.round(100*x.confirm/(x.recv||1));})},{n:'Assigned',c:'#c026d3',v:dd.map(function(x){return Math.round(100*x.assign/(x.recv||1));})},{n:'Installed',c:'#06874e',v:dd.map(function(x){return Math.round(100*x.install/(x.recv||1));})}],function(v){return Math.round(v)+'%';});
-  var tat=lineChart(days,[{n:'Task→slot',c:'#4f46e5',v:dd.map(function(x){return x.t_ts;})},{n:'Slot→confirm',c:'#7c3aed',v:dd.map(function(x){return x.t_sc;})},{n:'Confirm→assign',c:'#c026d3',v:dd.map(function(x){return x.t_ca;})},{n:'Assign→install',c:'#06874e',v:dd.map(function(x){return x.t_ai;})}],function(v){return ft(v);});
-  document.getElementById('tr').innerHTML='<div class=card><div class=ch2>Volume · bookings &amp; installs per day</div><div class=csub>Enrolled MG CSPs · since 1 Jul</div>'+vol+'</div>'+
-   '<div class=card><div class=ch2>Stage conversion trend</div><div class=csub>Each stage as % of that day&#39;s bookings received</div>'+conv+'</div>'+
-   '<div class=card><div class=ch2>Turnaround (TAT) trend</div><div class=csub>Median stage-to-stage duration per booking-day</div>'+tat+'</div>';
+  function cmp(fn,fmt){return lineChart(days,[{n:'Enrolled MG',c:'#4f46e5',v:EE.map(fn)},{n:'Non-enrolled',c:'#f59e0b',v:NN.map(fn)}],fmt);}
+  var pf=function(v){return Math.round(v)+'%';},nf=function(v){return Math.round(v);};
+  var c_book=cmp(function(x){return x.recv;},nf);
+  var c_inst=cmp(function(x){return Math.round(100*x.install/(x.recv||1));},pf);
+  var c_conf=cmp(function(x){return Math.round(100*x.confirm/(x.recv||1));},pf);
+  var c_tat=cmp(function(x){return x.t_ts;},function(v){return ft(v);});
+  var conv=lineChart(days,[{n:'Accepted',c:'#4f46e5',v:EE.map(function(x){return Math.round(100*x.slot/(x.recv||1));})},{n:'Confirmed',c:'#7c3aed',v:EE.map(function(x){return Math.round(100*x.confirm/(x.recv||1));})},{n:'Assigned',c:'#c026d3',v:EE.map(function(x){return Math.round(100*x.assign/(x.recv||1));})},{n:'Installed',c:'#06874e',v:EE.map(function(x){return Math.round(100*x.install/(x.recv||1));})}],pf);
+  document.getElementById('tr').innerHTML=
+   '<div class=card><div class=ch2>Bookings received / day</div><div class=csub>Enrolled MG vs non-enrolled CSPs · since 1 Jul</div>'+c_book+'</div>'+
+   '<div class=card><div class=ch2>Install rate <span style="color:var(--faint);font-weight:600">(installed ÷ bookings received)</span></div><div class=csub>The core outcome · enrolled MG vs non-enrolled</div>'+c_inst+'</div>'+
+   '<div class=card><div class=ch2>Customer-confirm rate</div><div class=csub>Confirmed ÷ bookings received · enrolled MG vs non-enrolled</div>'+c_conf+'</div>'+
+   '<div class=card><div class=ch2>Enrolled funnel conversion</div><div class=csub>Each stage as % of that day&#39;s bookings — enrolled MG CSPs</div>'+conv+'</div>'+
+   '<div class=card><div class=ch2>Speed · task created → slot proposed</div><div class=csub>Median TAT · enrolled MG vs non-enrolled</div>'+c_tat+'</div>';
  }
  // ---- BY SEGMENT (placeholder) ----
  document.getElementById('sg').innerHTML='<div class="card soon"><div class=ch2 style="margin-bottom:6px">By segment · keepgoing / almost / secured</div>Per-screen view — targeted CSPs, banner views &amp; booking→install funnel for each MG status — is being wired in next.<br><b>Coming shortly.</b></div>';
