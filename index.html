@@ -95,7 +95,7 @@ function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="d
 
 /* ---- the 8 funnel metrics, one definition everywhere ---- */
 var METRICS=[
- {k:'recv_per_csp_d', lab:'Bookings received <span class=of>per CSP per day (grey = total bookings)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
+ {k:'recv_d', lab:'Bookings received <span class=of>/ day</span>', fmt:function(v){return v==null?'—':v;}, good:'up'},
  {k:'slot_pct',    lab:'Slot proposed / CSP accepted <span class=of>% of received</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
  {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of slot proposed</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
  {k:'assign_pct',  lab:'Technician assigned <span class=of>% of confirmed</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
@@ -232,7 +232,7 @@ function showDrill(d,hr){
   ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
   document.body.appendChild(ov);}
  ov.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:820px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)">'+
-  '<div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59</div><div class=csub>loading journeys…</div></div>';
+  '<div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59</div><div class=csub>loading journeys… first open of a cell takes ~5–10s, then it&#39;s cached</div></div>';
  fetch(LEAD_API+'?d='+d+'&hr='+hr,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
   var box=ov.firstChild;if(!j||j.error){box.querySelector('.csub').textContent='error: '+(j&&j.error||'no data');return;}
   var h='<div style="display:flex;justify-content:space-between;align-items:baseline"><div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59 <span class=chip>'+j.n+' leads</span></div>'+
@@ -257,11 +257,21 @@ function showDrill(d,hr){
  }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
+function prep(blk,fixedDays){ // add recv_d = bookings/day to each PRE/POST block
+ if(!blk)return blk;
+ ['PRE','POST'].forEach(function(p){var m=blk[p];if(!m)return;
+  if(m.csp_days&&m.csps)m.recv_d=Math.round(10*m.received*m.csps/m.csp_days)/10;
+  else if(fixedDays)m.recv_d=Math.round(10*m.received/fixedDays)/10;});
+ return blk;
+}
 function render(D){
  document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
  document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul).';
  /* ---- TAB 1 ---- */
- var t1=D.tab1||{},E=t1.enr||{},N=t1.non||{};
+ var t1=D.tab1||{},E=prep(t1.enr||{}),N=prep(t1.non||{},t1.non_days);
+ (D.tab2||[]).forEach(function(c){prep(c.data);});
+ (D.tab3_screens||[]).forEach(function(s){prep(s.data);});
+ (D.tab3_engagement||[]).forEach(function(e){prep(e.data);});
  document.getElementById('t1').innerHTML=
   '<div class=card><div class=ch2>Enrolled funnel · POST<span class=chip>'+n(D.enrolled)+' CSPs</span></div>'+
   '<div class=csub>Current position of bookings received post-enrolment · <span class=mb style="color:var(--brand);font-weight:800">MBG</span> = the two indicators in the CSP&#39;s hands</div>'+
@@ -278,8 +288,8 @@ function render(D){
  var va=D.tab3_view_action||{};
  var vastrip=(va.median_min!=null)?
   '<div class=card><div class=ch2>After viewing the banner → first action on a lead</div>'+
-  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed or declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing</div></div>':'';
- var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads shown CSPs excluded — that campaign is stopped</span></div></div><div class=grid>';
+  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing</div></div>':'';
+ var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads excluded — no lead flow in that state, nothing to compare</span></div></div><div class=grid>';
  (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=cutCard(s.key,s.csps,s.data);});
  h3+='</div><div class=card style="padding:14px 20px;margin-top:14px"><div class=ch2>By engagement depth</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div></div><div class=grid>';
  (D.tab3_engagement||[]).forEach(function(e){h3+=cutCard(e.key,e.csps,e.data);});
