@@ -13,9 +13,6 @@ h1{font-size:clamp(1.4rem,3vw,2rem);font-weight:800;line-height:1.15}
 .tab.on{background:var(--ink);color:#fff}
 .card{background:var(--card);border-radius:16px;box-shadow:0 4px 24px rgba(22,16,33,.06);padding:22px 26px;margin-bottom:18px}
 .card h2{font-size:1.05rem;font-weight:800;margin-bottom:3px}.card .sub{font-size:13px;color:var(--mut);margin-bottom:14px}
-.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px}
-.kpi .v{font-size:2.4rem;font-weight:800;line-height:1;color:var(--acc)}.kpi .d{font-size:12px;color:var(--mut);margin-top:4px}
-.kpi .delta{font-size:13px;font-weight:800;margin-left:6px}.up{color:var(--green)}.dn{color:var(--red)}
 .tri{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0}
 .stg{width:100%;max-width:900px;display:flex;flex-direction:column;align-items:center}
 .snm{font-size:14px;font-weight:700;color:#4a4358;margin-bottom:5px}
@@ -30,31 +27,35 @@ table.hm{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;f
 </style></head><body>
 <header><div><div class=lbl>WIOM · Minimum Guarantee Program</div><h1>Funnels &amp; Leading Metrics</h1></div>
 <div class=asof id=asof>loading…</div></header>
-<div class=tabs><button class="tab on" data-t=ov>Overview</button><button class=tab data-t=fn>Booking → Install Funnel</button><button class=tab data-t=in>Installs · Hourly</button></div>
-<div id=ov></div><div id=fn class=hide></div><div id=in class=hide></div>
+<div class=tabs><button class="tab on" data-t=fn>Booking → Install Funnel</button><button class=tab data-t=in>Installs · Hourly</button></div>
+<div id=fn></div><div id=in class=hide></div>
 <script>
 var API='https://web-production-9f444.up.railway.app/data2';
 function n(v){return v==null?'—':Number(v).toLocaleString('en-IN');}
 function ft(m){if(m==null)return '—';return m<120?Math.round(m)+'m':(m/60).toFixed(1)+'h';}
 var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fw(w){if(!w)return '—';function p(x){var a=x.split('-');return{d:+a[2],m:MO[+a[1]-1]};}var a=p(w[0]),b=p(w[1]);return a.m===b.m?(a.d+'–'+b.d+' '+b.m):(a.d+' '+a.m+'–'+b.d+' '+b.m);}
-function delta(pre,post,good){if(pre==null||post==null||!pre)return '';var pc=Math.round((post-pre)/Math.abs(pre)*100);var up=good==='up'?pc>0:pc<0;return '<span class="delta '+(up?'up':'dn')+'">'+(pc>0?'+':'')+pc+'%</span>';}
-function kpi(post,pre,good,lab,suf){suf=suf||'';return '<div class=kpi><div class=v>'+n(post)+suf+(pre!=null?delta(pre,post,good):'')+'</div><div class=d>'+lab+(pre!=null?' · PRE '+n(pre)+suf:'')+'</div></div>';}
+function trend(D){var B=D.bookings_daily||[],I=D.installs_daily||[];var m={};B.forEach(function(x){(m[x.d]=m[x.d]||{}).b=x.r;});I.forEach(function(x){(m[x.d]=m[x.d]||{}).i=x.e;});
+ var days=Object.keys(m).sort();if(!days.length)return '';
+ var W=Math.max(560,days.length*74),Hh=210,pad=34,gap=(W-2*pad)/days.length,mx=0;days.forEach(function(d){mx=Math.max(mx,m[d].b||0,m[d].i||0);});mx=mx||1;
+ var top=28,base=Hh-30,sc=function(v){return base-(v/mx)*(base-top);},bw=Math.min(42,gap*0.5),bars='',ln='',dots='',labs='';
+ days.forEach(function(d,i){var cx=pad+(i+0.5)*gap,b=m[d].b||0,inst=m[d].i||0,by=sc(b);
+  bars+='<rect x="'+(cx-bw/2)+'" y="'+by+'" width="'+bw+'" height="'+(base-by)+'" rx="3" fill="#c9a5f5"/>';
+  labs+='<text x="'+cx+'" y="'+(by-6)+'" text-anchor="middle" fill="#6d17ce" font-size="12.5" font-weight="800">'+b+'</text>';
+  labs+='<text x="'+cx+'" y="'+(base+17)+'" text-anchor="middle" fill="#665e75" font-size="12">'+d+'</text>';
+  var iy=sc(inst);ln+=(i?'L':'M')+cx+' '+iy+' ';dots+='<circle cx="'+cx+'" cy="'+iy+'" r="4" fill="#d9008d"/>';
+  labs+='<text x="'+cx+'" y="'+(iy-9)+'" text-anchor="middle" fill="#d9008d" font-size="12" font-weight="800">'+inst+'</text>';});
+ return '<div class=card><h2>Daily trend · since 1 Jul</h2><div class=sub><span style="color:#c9a5f5">&#9646;</span> bookings received / day &nbsp;&nbsp; <span style="color:#d9008d">&#8212;&#9679;</span> installs / day (enrolled)</div><div style="overflow:auto"><svg viewBox="0 0 '+W+' '+Hh+'" style="width:100%;max-width:'+W+'px;height:auto">'+bars+'<path d="'+ln+'" fill="none" stroke="#d9008d" stroke-width="2.5"/>'+dots+labs+'</svg></div></div>';}
 function render(D){
  var QE=(D.POST||{}).enr||{},PE=(D.PRE||{}).enr||{},QN=(D.POST||{}).non||{};
  document.getElementById('asof').textContent='live · PRE '+fw(D.pre_window)+' vs POST '+fw(D.post_window)+' ('+D.n_days+'d each) · updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
- document.getElementById('ov').innerHTML='<div class=card><div class=strip>'+
-  kpi(QE.received_d,PE.received_d,'up','Bookings received / day')+kpi(QE.install_d,PE.install_d,'up','Installs / day')+
-  kpi(QE.install_ratio,PE.install_ratio,'up','Install rate (of confirmed)','%')+kpi(QE.slot_pct,PE.slot_pct,'up','CSP accept & slot %','%')+
-  kpi(QN.received_d,null,'up','Non-enrolled bookings / day')+
-  '</div><div class=sub style="margin-top:14px">Enrolled MG CSPs · current position, no maturity cap · PRE = same '+D.n_days+' days before launch</div></div>';
- var recv=QE.received||1,S=[{n:'Bookings received',v:QE.received,pre:PE.received,non:QN.received,p:100,t:null},
-  {n:'CSP accepted & proposed slot',v:QE.slot,pre:PE.slot,non:QN.slot,p:QE.slot_pct,t:QE.tat_slot},
-  {n:'Customer confirmed slot',v:QE.confirm,pre:PE.confirm,non:QN.confirm,p:QE.confirm_pct,t:QE.tat_confirm},
-  {n:'Installed',v:QE.install,pre:PE.install,non:QN.install,p:QE.install_ratio,t:QE.tat_install}];
- var s='<div class=card><h2>Booking → Install funnel</h2><div class=sub>abs = POST total over '+D.n_days+' days · % = stage conversion · TAT = median booking→stage</div><div class=tri>';
+ var recv=QE.received_d||1,S=[{n:'Bookings received / day',v:QE.received_d,pre:PE.received_d,non:QN.received_d,p:100,t:null},
+  {n:'CSP accepted & proposed slot',v:QE.slot_d,pre:PE.slot_d,non:QN.slot_d,p:QE.slot_pct,t:QE.tat_slot},
+  {n:'Customer confirmed slot',v:QE.confirm_d,pre:PE.confirm_d,non:QN.confirm_d,p:QE.confirm_pct,t:QE.tat_confirm},
+  {n:'Installed / day',v:QE.install_d,pre:PE.install_d,non:QN.install_d,p:QE.install_ratio,t:QE.tat_install}];
+ var s='<div class=card><h2>Booking → Install funnel</h2><div class=sub>per day (avg over '+D.n_days+' days) · % = stage conversion · TAT = median booking→stage · enrolled vs PRE vs non-enrolled</div><div class=tri>';
  S.forEach(function(x,i){var w=Math.max(16,Math.round(100*(x.v||0)/recv));s+='<div class=stg><div class=snm>'+x.n+'</div><div class=sbar style="width:'+w+'%"><span class=big>'+n(x.v)+'</span>'+(i>0?'<span class=pct>'+x.p+'%</span>':'')+'</div><div class=scmp><span>PRE <b>'+n(x.pre)+'</b></span><span>Non-enrolled <b>'+n(x.non)+'</b></span>'+(x.t!=null?'<span class=tat>booking→here <b>'+ft(x.t)+'</b></span>':'')+'</div></div>';});
- s+='</div></div>';document.getElementById('fn').innerHTML=s;
+ s+='</div></div>'+trend(D);document.getElementById('fn').innerHTML=s;
  var H=D.hourly_installs||[];
  if(!H.length){document.getElementById('in').innerHTML='<div class=card>No install data yet.</div>';}
  else{var days=Array.from(new Set(H.map(function(x){return x.d;}))).sort(),key={},mx=0,tot=0;H.forEach(function(x){key[x.hr+'|'+x.d]=x.e;if(x.e>mx)mx=x.e;tot+=x.e;});
@@ -63,7 +64,7 @@ function render(D){
   hours.forEach(function(h){var rt=0;t+='<tr><td class=hr>'+h+':00</td>';days.forEach(function(dd){var v=key[h+'|'+dd]||0;rt+=v;dt[dd]+=v;var op=mx?(0.08+0.92*v/mx):0;t+='<td style="background:'+(v?'rgba(139,92,246,'+op.toFixed(2)+')':'transparent')+';color:'+(op>.55?'#fff':'#2a2438')+'">'+(v||'')+'</td>';});t+='<td class=tot>'+rt+'</td></tr>';});
   t+='<tr><td class=hr style="color:#2a2438">Total</td>'+days.map(function(dd){return '<td class=tot>'+dt[dd]+'</td>';}).join('')+'<td class=tot>'+tot+'</td></tr></tbody></table></div></div>';document.getElementById('in').innerHTML=t;}
 }
-function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}).then(function(dd){if(dd&&dd.funnel&&dd.funnel.POST)render(dd.funnel);else document.getElementById('asof').textContent='data warming up…';}).catch(function(e){document.getElementById('ov').innerHTML='<div class="card err">Could not reach live data ('+e+'). Retrying…</div>';});}
+function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}).then(function(dd){if(dd&&dd.funnel&&dd.funnel.POST)render(dd.funnel);else document.getElementById('asof').textContent='data warming up…';}).catch(function(e){document.getElementById('fn').innerHTML='<div class="card err">Could not reach live data ('+e+'). Retrying…</div>';});}
 boot();setInterval(boot,120000);
-document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');['ov','fn','in'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==b.dataset.t);});};});
+document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');['fn','in'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==b.dataset.t);});};});
 </script></body></html>
