@@ -18,13 +18,15 @@ h1{font-size:clamp(1.5rem,3vw,2.15rem);font-weight:800;letter-spacing:-.02em;lin
 .ch2{font-size:15px;font-weight:750;letter-spacing:-.01em}.csub{font-size:12.5px;color:var(--sub);margin-top:2px;margin-bottom:16px}
 .csub b{color:var(--ink)}
 /* visual funnel */
-.fnl{display:flex;flex-direction:column;gap:7px;margin:2px 0 4px}
-.fbar{position:relative;height:34px;border-radius:7px;background:var(--line2);overflow:hidden}
-.ffill{position:absolute;inset:0 auto 0 0;border-radius:7px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
-.frow{position:relative;display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 13px;font-size:13px}
-.frow .fn{font-weight:650;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.18);z-index:1;letter-spacing:-.01em}
-.frow .fv{z-index:1;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.frow .fv .fp{font-size:15px}.frow .fv .fa{font-size:11.5px;opacity:.82;margin-left:6px;font-weight:600}
+.fnl{display:flex;flex-direction:column;gap:9px;margin:4px 0}
+.frow2{display:grid;grid-template-columns:212px 1fr 116px;align-items:center;gap:16px}
+.frow2 .nm{font-size:13px;font-weight:650;color:#39414f;letter-spacing:-.01em}
+.frow2 .track{height:26px;border-radius:7px;background:var(--line2);position:relative;overflow:hidden}
+.frow2 .fill{position:absolute;top:0;left:0;bottom:0;border-radius:7px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.frow2 .val{text-align:right;white-space:nowrap}
+.frow2 .val .vp{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.frow2 .val .va{font-size:11px;color:var(--faint);margin-left:6px;font-weight:600}
+@media(max-width:640px){.frow2{grid-template-columns:120px 1fr 92px;gap:9px}.frow2 .nm{font-size:11.5px}}
 /* comparison table */
 table.t{border-collapse:collapse;width:100%}
 .t thead th{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:right;padding:0 12px 9px;border-bottom:1px solid var(--line)}
@@ -100,7 +102,7 @@ function render(D){
  document.getElementById('asof').innerHTML='<b>Live</b> · auto-refresh 2 min · updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+'<br>PRE '+fw(D.pre_window)+' vs POST '+fw(D.post_window)+' · '+D.n_days+' days each<br>'+n(D.num_csps)+' enrolled MG CSPs';
  // ---- FUNNEL ----
  var stg=[['Bookings received',100,QE.received_d],['CSP accepted / slot proposed',QE.slot_pct,QE.slot_d],['Slot confirmed by customer',QE.confirm_pct,QE.confirm_d],['Technician assigned',QE.assign_pct,QE.assign_d],['Installed',QE.install_pct,QE.install_d]];
- var vf='<div class=fnl>';stg.forEach(function(s){var w=Math.max(11,s[1]);vf+='<div class=fbar><div class=ffill style="width:'+w+'%"></div><div class=frow><span class=fn>'+s[0]+'</span><span class=fv><span class=fp>'+s[1]+'%</span><span class=fa>'+n(s[2])+'/day</span></span></div></div>';});vf+='</div>';
+ var vf='<div class=fnl>';stg.forEach(function(s){var w=Math.max(3,s[1]);vf+='<div class=frow2><span class=nm>'+s[0]+'</span><span class=track><span class=fill style="width:'+w+'%"></span></span><span class=val><span class=vp>'+s[1]+'%</span><span class=va>'+n(s[2])+'/day</span></span></div>';});vf+='</div>';
  var tbl='<table class=t><thead><tr><th class=l>Stage</th><th>Enrolled PRE</th><th>Enrolled POST</th><th>Δ vol</th><th>Non-enrolled</th></tr></thead><tbody>'+
   pctRow('Bookings received / day',PE,QE,QN,null,'received_d')+
   pctRow('CSP accepted / slot proposed',PE,QE,QN,'slot_pct','slot_d')+
