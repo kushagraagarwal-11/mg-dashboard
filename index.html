@@ -73,10 +73,12 @@ function render(D){
   frow('Slot confirmed by customer',PE,QE,QN,'confirm_d','confirm_pct')+
   frow('Technician assigned',PE,QE,QN,'assign_d','assign_pct')+
   frow('Installed',PE,QE,QN,'install_d','install_pct')+
+  '<tr class=grp><td class=l>CSP decline rate <span style="font-size:11px;color:#a49bb3">(of leads offered)</span></td><td class=pre>'+(PE.decline_pct!=null?PE.decline_pct+"%":"—")+'</td><td class=post>'+(QE.decline_pct!=null?QE.decline_pct+"%":"—")+'</td><td>'+delta(PE.decline_pct,QE.decline_pct,'down')+'</td><td class=non>'+(QN.decline_pct!=null?QN.decline_pct+"%":"—")+'</td></tr>'+
   trow('Task created → slot proposed',PE,QE,QN,'tat_task_slot')+
   trow('Slot proposed → customer confirmed',PE,QE,QN,'tat_slot_confirm')+
-  trow('Customer confirmed → installed',PE,QE,QN,'tat_confirm_install')+
-  '</tbody></table><div class=note>TATs = median stage-to-stage durations. There is no separate "technician assigned" timestamp in the data, so that step has no isolated TAT — it sits inside "confirmed → installed".</div></div>'+trend(D);
+  trow('Customer confirmed → technician assigned',PE,QE,QN,'tat_confirm_assign')+
+  trow('Technician assigned → installed',PE,QE,QN,'tat_assign_install')+
+  '</tbody></table><div class=note>TATs = median stage-to-stage durations, from the connection state history. CSP decline rate = share of leads offered to a CSP that the CSP declined; a declined lead re-allocates to another CSP, so declines are counted across all offers (not just a lead&#39;s final state).</div></div>'+trend(D);
  document.getElementById('fn').innerHTML=t;
  var C=D.cohorts||[];var ct='<div class=card><h2>Daily cohorts · funnel by booking-day maturity</h2><div class=sub>each row = bookings received that day &amp; how far they&#39;ve progressed <b>as of now</b> · % of that day&#39;s bookings</div>'+
   '<table class=co><thead><tr><th class=l>Cohort</th><th>Bookings</th><th>Accepted</th><th>Confirmed</th><th>Assigned</th><th>Installed</th></tr></thead><tbody>';
