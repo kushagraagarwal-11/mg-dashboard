@@ -95,7 +95,7 @@ function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="d
 
 /* ---- the 8 funnel metrics, one definition everywhere ---- */
 var METRICS=[
- {k:'recv_per_csp_d', lab:'Bookings received <span class=of>/ CSP / day</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
+ {k:'recv_per_csp_d', lab:'Bookings received <span class=of>per CSP per day (grey = total bookings)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
  {k:'slot_pct',    lab:'Slot proposed / CSP accepted <span class=of>% of received</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
  {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of slot proposed</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
  {k:'assign_pct',  lab:'Technician assigned <span class=of>% of confirmed</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
@@ -111,6 +111,22 @@ function funnelTable(P,Q,small){
   var pa=(P&&m.abs)?'<span class=a>'+n(P[m.abs])+'</span>':'',qa=(Q&&m.abs)?'<span class=a>'+n(Q[m.abs])+'</span>':'';
   s+='<tr'+(m.tat?' class=tat':'')+'><td class=l>'+m.lab+'</td><td class=pre><span class=p>'+m.fmt(pv)+'</span>'+pa+'</td>'+
      '<td><span class=p>'+m.fmt(qv)+'</span>'+qa+'</td><td>'+dl(pv,qv,m.good)+'</td></tr>';});
+ return s+'</tbody></table>';
+}
+/* one merged table: enrolled + non-enrolled side by side */
+function mergedTable(E,N){
+ function cell(D,m,pre){var v=D?D[m.k]:null,a=(D&&m.abs)?'<span class=a>'+n(D[m.abs])+'</span>':'';
+  return '<td'+(pre?' class=pre':'')+'><span class=p>'+m.fmt(v)+'</span>'+a+'</td>';}
+ var s='<table class=t><thead>'+
+  '<tr><th class=l></th><th colspan=3 style="text-align:center;color:var(--brand)">Enrolled · own-enrolment window</th>'+
+  '<th colspan=3 style="text-align:center;color:#2563EB">Non-enrolled · anchored 1 Jul</th></tr>'+
+  '<tr><th class=l>Metric</th><th>PRE</th><th>POST</th><th>Δ</th><th>PRE</th><th>POST</th><th>Δ</th></tr></thead><tbody>';
+ METRICS.forEach(function(m){
+  var ep=E&&E.PRE?E.PRE[m.k]:null,eq=E&&E.POST?E.POST[m.k]:null;
+  var np=N&&N.PRE?N.PRE[m.k]:null,nq=N&&N.POST?N.POST[m.k]:null;
+  s+='<tr'+(m.tat?' class=tat':'')+'><td class=l>'+m.lab+'</td>'+
+   cell(E&&E.PRE,m,1)+cell(E&&E.POST,m)+'<td>'+dl(ep,eq,m.good)+'</td>'+
+   cell(N&&N.PRE,m,1)+cell(N&&N.POST,m)+'<td>'+dl(np,nq,m.good)+'</td></tr>';});
  return s+'</tbody></table>';
 }
 function cutCard(name,ncsp,d,extra){
@@ -190,21 +206,55 @@ function bindHover(){
    tip.style.opacity=1;tip.style.left=Math.max(4,Math.min(px+14,r.width-tip.offsetWidth-8))+'px';tip.style.top='16px';});
   svg.addEventListener('pointerleave',function(){xh.setAttribute('opacity','0');tip.style.opacity=0;});});
 }
-function heatmap(cells,title,sub){
+function heatmap(cells,title,sub,drill){
  if(!cells||!cells.length)return '<div class=card><div class=ch2>'+title+'</div><div class=csub>no data yet</div></div>';
  var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},mx=0,tot=0;
  cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;if(key[x.hr+'|'+x.d]>mx)mx=key[x.hr+'|'+x.d];tot+=x.n;});
  var hrs=cells.map(function(x){return x.hr;}),hmin=Math.min.apply(null,hrs),hmax=Math.max.apply(null,hrs),hours=[];
  for(var h=hmin;h<=hmax;h++)hours.push(h);
  var dt={};days.forEach(function(d){dt[d]=0;});
- var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · darker = more</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
+ var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · darker = more'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
    days.map(function(d){return '<th>'+fd(d)+'</th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  hours.forEach(function(h){var rt=0;s+='<tr><td class=hr>'+h+':00</td>';
   days.forEach(function(d){var v=key[h+'|'+d]||0;rt+=v;dt[d]+=v;var op=mx?v/mx:0;
-   s+='<td style="background:'+(v?'rgba(217,0,141,'+(0.07+0.75*op).toFixed(2)+')':'transparent')+';color:'+(op>.55?'#fff':'#3A3348')+'">'+(v||'')+'</td>';});
+   var attrs=(drill&&v)?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+v+' leads"':'';
+   s+='<td'+attrs+' style="background:'+(v?'rgba(217,0,141,'+(0.07+0.75*op).toFixed(2)+')':'transparent')+';color:'+(op>.55?'#fff':'#3A3348')+(drill&&v?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
   s+='<td class=tot>'+rt+'</td></tr>';});
  s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){return '<td class=tot>'+dt[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
  return s;
+}
+/* ---- lead-journey modal (heatmap drill) ---- */
+var LEAD_API=API.replace('/data4','/data4lead');
+function showDrill(d,hr){
+ var ov=document.getElementById('drillov');
+ if(!ov){ov=document.createElement('div');ov.id='drillov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(22,16,33,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto';
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+  document.body.appendChild(ov);}
+ ov.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:820px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)">'+
+  '<div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59</div><div class=csub>loading journeys…</div></div>';
+ fetch(LEAD_API+'?d='+d+'&hr='+hr,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+  var box=ov.firstChild;if(!j||j.error){box.querySelector('.csub').textContent='error: '+(j&&j.error||'no data');return;}
+  var h='<div style="display:flex;justify-content:space-between;align-items:baseline"><div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59 <span class=chip>'+j.n+' leads</span></div>'+
+   '<button onclick="document.getElementById(\'drillov\').remove()" style="border:none;background:#E5DFEE;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;color:var(--sub)">close ✕</button></div>'+
+   '<div class=csub>Every partner the lead was sent to, in order, and what happened there · times IST</div>';
+  (j.leads||[]).forEach(function(L){
+   h+='<div style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px">'+
+    '<div style="font-weight:800;font-size:13.5px;margin-bottom:7px">'+L.mobile+' <span style="color:var(--faint);font-weight:600">· booked '+L.booked+'</span></div>';
+   (L.hops||[]).forEach(function(x,i){
+    var badge=x.enr?'<span style="font-size:9.5px;font-weight:800;background:#F6E0EE;color:var(--brand);border-radius:5px;padding:1px 6px;margin-left:6px">MG</span>':'';
+    var story=[];
+    if(x.prop)story.push('slot proposed '+x.prop);
+    if(x.asgn)story.push('tech assigned '+x.asgn);
+    if(x.inst)story.push('<b style="color:var(--pos)">installed '+x.inst+'</b>');
+    if(x.decl)story.push('<b style="color:var(--neg)">declined '+x.decl+'</b>');
+    if(!x.inst&&!x.decl)story.push('<span class=warm>'+(x.state||'')+'</span>');
+    if(x.reason)story.push('<span style="color:var(--faint)">'+x.reason+'</span>');
+    h+='<div style="font-size:12.5px;padding:5px 0 5px 12px;border-left:2px solid '+(x.enr?'#D9008D':'#C9C3D6')+';margin-bottom:4px;line-height:1.5">'+
+     '<b>'+(i+1)+'. '+x.csp+'</b>'+badge+' <span style="color:var(--faint)">· sent '+(x.sent||'—')+'</span><br>'+story.join(' · ')+'</div>';});
+   h+='</div>';});
+  box.innerHTML=h;
+ }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
 function render(D){
@@ -216,19 +266,21 @@ function render(D){
   '<div class=card><div class=ch2>Enrolled funnel · POST<span class=chip>'+n(D.enrolled)+' CSPs</span></div>'+
   '<div class=csub>Current position of bookings received post-enrolment · <span class=mb style="color:var(--brand);font-weight:800">MBG</span> = the two indicators in the CSP&#39;s hands</div>'+
   funnelBars(E.POST)+'</div>'+
-  '<div class=grid>'+
-  '<div class=card><div class=cuthdr><span class=nm>Enrolled</span><span class=n>'+n(D.enrolled)+' CSPs · pre vs post own enrolment</span></div>'+funnelTable(E.PRE,E.POST)+'</div>'+
-  '<div class=card><div class=cuthdr><span class=nm>Non-enrolled</span><span class=n>anchored at 1 Jul · '+(t1.non_days||'—')+'d each side</span></div>'+funnelTable(N.PRE,N.POST)+'</div>'+
-  '</div>'+
-  '<div class=card><div class=note style="border:none;margin:0;padding:0">Bookings/CSP/day for non-enrolled is not shown (no fixed cohort denominator). Non-enrolled moves with season/city mix — read it as context, not a strict control. Recent bookings are still in flight, so POST funnel %s are naturally a touch lower than they will settle; PRE (older) is fully matured.</div></div>';
+  '<div class=card><div class=cuthdr><span class=nm>Enrolled vs Non-enrolled</span><span class=n>'+n(D.enrolled)+' enrolled CSPs · non-enrolled '+(t1.non_days||'—')+'d each side</span></div>'+
+  '<div style="overflow-x:auto">'+mergedTable(E,N)+'</div>'+
+  '<div class=note>Per-CSP/day is shown for enrolled only (fixed cohort denominator); non-enrolled columns show totals. Non-enrolled moves with season/city mix — context, not a strict control. Recent bookings are still in flight, so POST funnel %s settle upward over a day or two.</div></div>';
  /* ---- TAB 2 ---- */
  var h2='<div class=grid>';
  (D.tab2||[]).forEach(function(c){h2+=cutCard(c.label,c.csps,c.data);});
  h2+='</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohorts = the CSP&#39;s answer on the in-app feedback (flow 3); a CSP&#39;s category is its latest owner/admin answer. Unaware CSPs are being called and walked through the program — watch this column converge to Excited.</div></div>';
  document.getElementById('t2').innerHTML=h2;
  /* ---- TAB 3 ---- */
- var h3='<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads campaign is currently stopped</span> — its CSPs see no banner today</div></div><div class=grid>';
- (D.tab3_screens||[]).forEach(function(s){h3+=cutCard(s.key,s.csps,s.data);});
+ var va=D.tab3_view_action||{};
+ var vastrip=(va.median_min!=null)?
+  '<div class=card><div class=ch2>After viewing the banner → first action on a lead</div>'+
+  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed or declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing</div></div>':'';
+ var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads shown CSPs excluded — that campaign is stopped</span></div></div><div class=grid>';
+ (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=cutCard(s.key,s.csps,s.data);});
  h3+='</div><div class=card style="padding:14px 20px;margin-top:14px"><div class=ch2>By engagement depth</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div></div><div class=grid>';
  (D.tab3_engagement||[]).forEach(function(e){h3+=cutCard(e.key,e.csps,e.data);});
  h3+='</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with, so their better funnel is correlation, not proof. The honest signal is each group&#39;s own PRE → POST delta, not group vs group.</div></div>';
@@ -243,9 +295,12 @@ function render(D){
    lineChart('c41',days,[{n:'Bookings received',c:'#2563EB',v:daily.map(function(x){return x.b;})},
                         {n:'Installs',c:'#D9008D',v:daily.map(function(x){return x.i;})}],function(v){return n(Math.round(v));},launch)+'</div>';
  }
- h4+=heatmap(t4.hourly_book,'Bookings received · hour × day','when demand lands through the day (IST)');
+ h4+=heatmap(t4.hourly_book,'Bookings received · hour × day','when demand lands through the day (IST)',true);
  h4+=heatmap(t4.hourly_inst,'Installs completed · hour × day','when installs finish through the day (IST)');
  document.getElementById('t4').innerHTML=h4;
+ document.getElementById('t4').onclick=function(e){
+  var td=e.target.closest?e.target.closest('td.dr'):null;
+  if(td)showDrill(td.getAttribute('data-d'),td.getAttribute('data-hr'));};
  bindHover();
 }
 function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
