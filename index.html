@@ -60,8 +60,7 @@ function render(D){
   row('Customer confirmed slot <span style="font-size:11px;color:#a49bb3">(FYI)</span>',PE.confirm_pct,QE.confirm_pct,'up','%',QN.confirm_pct,1)+
   row('Technician assigned % (of confirmed)',PE.assign_pct,QE.assign_pct,'up','%',QN.assign_pct)+
   row('Installed / day',PE.install_d,QE.install_d,'up','',QN.install_d)+
-  row('Install rate (of confirmed)',PE.install_ratio,QE.install_ratio,'up','%',QN.install_ratio)+
-  row('CSP decline %',PE.decline_pct,QE.decline_pct,'down','%',QN.decline_pct,0,1)+
+  row('Install rate (of confirmed)',PE.install_ratio,QE.install_ratio,'up','%',QN.install_ratio,0,1)+
   rowT('Booking → slot TAT',PE.tat_slot,QE.tat_slot,QN.tat_slot)+
   rowT('Booking → confirm TAT',PE.tat_confirm,QE.tat_confirm,QN.tat_confirm)+
   rowT('Booking → install TAT',PE.tat_install,QE.tat_install,QN.tat_install)+
