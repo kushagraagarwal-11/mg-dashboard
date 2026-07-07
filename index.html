@@ -22,23 +22,27 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .ch2 .chip{font-size:10.5px;font-weight:800;background:#F6E0EE;color:var(--brand);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:2px}
 .csub{font-size:12.5px;color:var(--sub);margin-top:2px;margin-bottom:12px}.csub b{color:var(--ink)}
 .note{font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.6;padding-top:11px;border-top:1px solid var(--line2)}
-/* triangle funnel */
+/* stair-step funnel: descending bars + dashed PRE tick (bullet style) */
 .fun{width:100%}
-.fun .frow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;text-align:center}
-.fun .snm{font-size:12px;font-weight:700;color:#4A4258;padding:0 6px 7px}
-.fun .snm .mb{color:var(--brand);font-weight:800}
-.fun svg{display:block;width:100%;height:auto}
-.fun .sv .p2{font-size:17px;font-weight:800;letter-spacing:-.02em}
-.fun .sv .ab{font-size:11px;color:var(--faint);font-weight:700;margin-left:4px}
-.fun .sv .pr{font-size:11px;color:#948DA5;font-weight:700;margin-top:1px}
-.fun .sv{padding:8px 6px 0}
-.fun.mini .snm{font-size:10.5px;padding-bottom:5px}
-.fun.mini .sv .p2{font-size:14px}
-.fun.mini .sv .ab{font-size:10px}
-.fun.mini .sv .pr{font-size:10px}
+.fun .row{display:grid;grid-template-columns:150px 1fr 168px;align-items:center;gap:12px;margin:9px 0}
+.fun.mini .row{grid-template-columns:108px 1fr 128px;margin:7px 0;gap:8px}
+.fun .nm{font-size:12.5px;font-weight:700;color:#4A4258;text-align:right;line-height:1.25}
+.fun.mini .nm{font-size:10.5px}
+.fun .nm .mb{color:var(--brand);font-weight:800}
+.fun .bz{position:relative;height:27px}
+.fun.mini .bz{height:19px}
+.fun .b{position:absolute;top:0;left:0;bottom:0;border-radius:0 5px 5px 0;background:var(--brand)}
+.fun .pk{position:absolute;top:-5px;bottom:-5px;width:0;border-left:2.5px dashed #3A3348;opacity:.75}
+.fun .val{white-space:nowrap}
+.fun .val .p2{font-size:16.5px;font-weight:800;letter-spacing:-.02em}
+.fun .val .ab{font-size:11px;color:var(--faint);font-weight:700;margin-left:4px}
+.fun .val .pr{font-size:11px;color:#948DA5;font-weight:700}
+.fun.mini .val .p2{font-size:13.5px}
+.fun.mini .val .ab{font-size:10px}
+.fun.mini .val .pr{font-size:10px}
 .legend{display:flex;gap:16px;font-size:11.5px;color:var(--sub);font-weight:650;margin-top:8px}
-.legend .k1{display:inline-block;width:14px;height:9px;background:var(--brand);opacity:.85;border-radius:2px;margin-right:5px}
-.legend .k2{display:inline-block;width:14px;height:0;border-top:2px dashed #4A4258;margin-right:5px;vertical-align:3px}
+.legend .k1{display:inline-block;width:14px;height:9px;background:var(--brand);border-radius:2px;margin-right:5px}
+.legend .k2{display:inline-block;width:0;height:11px;border-left:2.5px dashed #3A3348;margin-right:5px;vertical-align:-2px}
 /* metric table */
 table.t{border-collapse:collapse;width:100%}
 .t thead th{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:right;padding:0 10px 8px;border-bottom:1px solid var(--line)}
@@ -125,27 +129,20 @@ function prep(blk,fixedDays){ // recv_d + ALL stage %s rebased on received
 
 /* ---- TRIANGLE funnel: POST = filled shape, PRE = dotted outline (manager sketch) ---- */
 function funnel(P,Q,mini){
- var W=1000,H=mini?150:180,cy=H/2,hm=(H-10)/2,padX=6,iw=W-2*padX;
- function fr(m){if(!m||!m.received)return null;return STAGES.map(function(s){return (m[s.k]||0)/m.received;});}
- var fq=fr(Q),fp=fr(P);
- function xs(i){return padX+iw*i/4;}
- function poly(f){var top=[],bot=[];
-  f.forEach(function(v,i){var h=Math.max(.02,v)*hm;top.push(xs(i).toFixed(1)+','+(cy-h).toFixed(1));bot.unshift(xs(i).toFixed(1)+','+(cy+h).toFixed(1));});
-  return top.concat(bot).join(' ');}
- var sep='';for(var i=1;i<5;i++)sep+='<line x1='+xs(i)+' y1=4 x2='+xs(i)+' y2='+(H-4)+' stroke="#E6E1EE" stroke-width=1 stroke-dasharray="3 4"/>';
- var svg='<svg viewBox="0 0 '+W+' '+H+'">'+sep+
-  (fq?'<polygon points="'+poly(fq)+'" fill="#D9008D" opacity=".85"/>':'')+
-  (fp?'<polygon points="'+poly(fp)+'" fill="none" stroke="#4A4258" stroke-width="2.5" stroke-dasharray="8 7" stroke-linejoin="round"/>':'')+
-  '</svg>';
- var names='<div class=frow>'+STAGES.map(function(s){return '<div class=snm>'+s.nm+'</div>';}).join('')+'</div>';
- var vals='<div class=frow>'+STAGES.map(function(s,i){
-  var qv=Q?Q[s.k]:null,pv=P?P[s.k]:null,qr=Q?Q.received:0,pr=P?P.received:0;
-  var big=(i===0)?n(qv):(qr?pct(qv,qr)+'%':'—');
+ var qr=Q?Q.received:0,pr=P?P.received:0;
+ var s='<div class="fun'+(mini?' mini':'')+'">';
+ STAGES.forEach(function(st,i){
+  var qv=Q?(Q[st.k]||0):0,pv=P?(P[st.k]||0):0;
+  var qp=(i===0)?100:(qr?100*qv/qr:0), pp=(i===0)?100:(pr?100*pv/pr:0);
+  var big=(i===0)?n(qv):(qr?Math.round(10*qp)/10+'%':'—');
   var ab=(i===0)?'bookings':n(qv);
-  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+pct(pv,pr)+'% '+n(pv)):'pre —');
-  return '<div class=sv><span class=p2>'+big+'</span><span class=ab>'+ab+'</span><div class=pr>'+pre+'</div></div>';}).join('')+'</div>';
- return '<div class="fun'+(mini?' mini':'')+'">'+names+svg+vals+
-  '<div class=legend><span><span class=k1></span>POST (filled)</span><span><span class=k2></span>PRE (dotted outline)</span><span>all % = share of bookings received</span></div></div>';
+  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(10*pp)/10+'% '+n(pv)):'pre —');
+  s+='<div class=row><span class=nm>'+st.nm+'</span>'+
+   '<span class=bz><span class=b style="width:'+Math.max(1.5,qp)+'%"></span>'+
+   (P?'<span class=pk style="left:'+Math.max(0,Math.min(100,pp))+'%"></span>':'')+'</span>'+
+   '<span class=val><span class=p2>'+big+'</span><span class=ab>'+ab+'</span><div class=pr>'+pre+'</div></span></div>';});
+ s+='<div class=legend><span><span class=k1></span>POST bar</span><span><span class=k2></span>PRE level (dashed tick)</span><span>all % = share of bookings received</span></div></div>';
+ return s;
 }
 function tatline(P,Q){
  function pair(k){return ft(P?P[k]:null)+' → <b>'+ft(Q?Q[k]:null)+'</b>';}
