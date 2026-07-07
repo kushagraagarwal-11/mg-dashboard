@@ -66,6 +66,22 @@ table.t{border-collapse:collapse;width:100%}
 .cuthdr .n{font-size:12px;color:var(--faint);font-weight:700}
 .tatline{font-size:11.5px;color:var(--sub);font-weight:650;margin-top:9px;padding-top:8px;border-top:1px solid var(--line2)}
 .tatline b{color:#4A4258}
+/* cohort matrix: cohorts as column groups (PRE|POST), metrics as rows, mini funnel in header */
+table.mx{border-collapse:collapse;width:100%}
+.mx th{font-size:11px;font-weight:800;color:var(--faint);text-align:center;padding:6px 8px;border-bottom:1px solid var(--line)}
+.mx th.l{text-align:left}
+.mx th.gh{color:var(--ink);font-size:13.5px;border-left:1px solid var(--line2);vertical-align:bottom}
+.mx th.gh .gn{font-size:10.5px;color:var(--faint);font-weight:700;margin-top:2px}
+.mx td{padding:8px 9px;border-bottom:1px solid var(--line2);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mx tr:last-child td{border-bottom:none}
+.mx td.l{text-align:left;font-size:12.5px;color:#4A4258;font-weight:650;white-space:normal}
+.mx td.l .mb{color:var(--brand);font-weight:800}
+.mx td.l .of{color:var(--faint);font-weight:600;font-size:10.5px}
+.mx td.prc{color:#948DA5;font-weight:700;font-size:13px;border-left:1px solid var(--line2)}
+.mx td.poc{font-weight:800;font-size:14.5px}
+.mx td .a{font-size:10px;color:var(--faint);font-weight:700;margin-left:3px}
+.mf{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0 auto 5px;width:76px}
+.mf span{height:5px;border-radius:2px;background:var(--brand);display:block}
 /* heatmap + modal */
 table.hm{border-collapse:collapse;font-size:12px;width:100%}
 .hm th{color:var(--sub);font-weight:650;padding:4px 5px;text-align:center;font-size:10.5px}.hm th.hr{text-align:right}
@@ -230,6 +246,40 @@ function showDrill(d,hr){
  }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
+function miniFun(Q){
+ if(!Q||!Q.received)return '';
+ return '<div class=mf>'+STAGES.map(function(s){var v=(Q[s.k]||0)/Q.received;
+  return '<span style="width:'+Math.max(6,Math.round(100*v))+'%"></span>';}).join('')+'</div>';
+}
+var MXROWS=[
+ {lab:'Bookings received <span class=of>window total</span>', v:function(m){return m?n(m.received):'—';}, raw:function(m){return m?m.received:null;}, good:'up'},
+ {lab:'Slot proposed / accepted <span class=of>% of received</span> <span class=mb>MBG</span>', k:'slot_pct', abs:'slot', good:'up'},
+ {lab:'Customer slot confirmed <span class=of>% of received</span>', k:'confirm_pct', abs:'confirm', good:'up'},
+ {lab:'Technician assigned <span class=of>% of received</span> <span class=mb>MBG</span>', k:'assign_pct', abs:'assign', good:'up'},
+ {lab:'Installed <span class=of>% of received</span>', k:'install_pct', abs:'install', good:'up'},
+ {lab:'TAT · task received → CSP accepted', k:'tat_ta', tat:1, good:'down'},
+ {lab:'TAT · slot confirmed → tech assigned', k:'tat_ca', tat:1, good:'down'},
+ {lab:'TAT · assigned → installed', k:'tat_ai', tat:1, good:'down'}];
+function cohortMatrix(groups){
+ var s='<div style="overflow-x:auto"><table class=mx><thead><tr><th class=l></th>';
+ groups.forEach(function(g){var Q=g.data?g.data.POST:null;
+  s+='<th colspan=2 class=gh>'+miniFun(Q)+g.label+'<div class=gn>'+n(g.csps)+' CSPs</div></th>';});
+ s+='</tr><tr><th class=l>Metric</th>';
+ groups.forEach(function(){s+='<th style="border-left:1px solid var(--line2)">PRE</th><th>POST</th>';});
+ s+='</tr></thead><tbody>';
+ MXROWS.forEach(function(r){
+  s+='<tr><td class=l>'+r.lab+'</td>';
+  groups.forEach(function(g){
+   var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
+   var pv,qv,pf,qf,ab='';
+   if(r.v){pv=r.raw(P);qv=r.raw(Q);pf=r.v(P);qf=r.v(Q);}
+   else if(r.tat){pv=P?P[r.k]:null;qv=Q?Q[r.k]:null;pf=ft(pv);qf=ft(qv);}
+   else{pv=P?P[r.k]:null;qv=Q?Q[r.k]:null;pf=(pv==null?'—':pv+'%');qf=(qv==null?'—':qv+'%');
+    ab=(Q&&r.abs)?'<span class=a>'+n(Q[r.abs])+'</span>':'';}
+   s+='<td class=prc>'+pf+'</td><td class=poc>'+qf+ab+' '+dl(pv,qv,r.good)+'</td>';});
+  s+='</tr>';});
+ return s+'</tbody></table></div>';
+}
 function mergedTable(E,N){
  function cell(D,m,pre){var v=D?D[m.k]:null,a=(D&&m.abs)?'<span class=a>'+n(D[m.abs])+'</span>':'';
   return '<td'+(pre?' class=pre':'')+'><span class=p>'+m.fmt(v)+'</span>'+a+'</td>';}
@@ -267,20 +317,18 @@ function render(D){
   '</div>'+
   '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Recent bookings are still in flight, so POST %s settle upward over a day or two; PRE (older) is fully matured.</div></div>';
  /* ---- TAB 2: funnel per feedback cohort ---- */
- var h2='<div class=grid>';
- (D.tab2||[]).forEach(function(c){h2+=funnelCard(c.label,n(c.csps)+' CSPs',c.data,true);});
- h2+='</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohort = the CSP&#39;s in-app feedback answer (latest owner/admin answer wins). Unaware CSPs are being called and walked through the program — watch that funnel fill toward Excited&#39;s shape.</div></div>';
+ var h2='<div class=card><div class=ch2>Feedback cohorts · PRE vs POST</div><div class=csub>Cohort = the CSP&#39;s in-app feedback answer · mini funnel = POST shape · all % of received</div>'+
+  cohortMatrix((D.tab2||[]).map(function(c){return {label:c.label,csps:c.csps,data:c.data};}))+'</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohort = the CSP&#39;s in-app feedback answer (latest owner/admin answer wins). Unaware CSPs are being called and walked through the program — watch that funnel fill toward Excited&#39;s shape.</div></div>';
  document.getElementById('t2').innerHTML=h2;
  /* ---- TAB 3: funnels for screens + engagement ---- */
  var va=D.tab3_view_action||{};
  var vastrip=(va.median_min!=null)?
   '<div class=card><div class=ch2>After viewing the banner → first action on a lead</div>'+
   '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h · <span style="color:var(--faint)">includes waiting for the next lead to arrive — not pure response speed</span></div></div>':'';
- var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads excluded — no lead flow in that state, nothing to compare</span></div></div><div class=grid>';
- (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=funnelCard(s.key,n(s.csps)+' CSPs',s.data,true);});
- h3+='</div><div class=card style="padding:14px 20px;margin-top:14px"><div class=ch2>By engagement depth</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div></div><div class=grid>';
- (D.tab3_engagement||[]).forEach(function(e){h3+=funnelCard(e.key,n(e.csps)+' CSPs',e.data,true);});
- h3+='</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with. The honest signal is each group&#39;s own PRE (dotted) vs POST (filled) shape, not group vs group.</div></div>';
+ var h3=vastrip+'<div class=card><div class=ch2>By banner screen · PRE vs POST</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads excluded — no lead flow in that state, nothing to compare</span></div>'+
+  cohortMatrix((D.tab3_screens||[]).filter(function(s){return s.key!=='noleads';}).map(function(s){return {label:s.key,csps:s.csps,data:s.data};}))+'</div>'+
+  '<div class=card><div class=ch2>By engagement depth · PRE vs POST</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div>'+
+  cohortMatrix((D.tab3_engagement||[]).map(function(e){return {label:e.key,csps:e.csps,data:e.data};}))+'</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with. The honest signal is each group&#39;s own PRE (dotted) vs POST (filled) shape, not group vs group.</div></div>';
  document.getElementById('t3').innerHTML=h3;
  /* ---- TAB 4: grouped bars + heatmaps ---- */
  var t4=D.tab4||{},daily=t4.daily||[];
