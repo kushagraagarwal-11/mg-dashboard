@@ -215,8 +215,9 @@ function heatmap(cells,title,sub,drill){
  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
  var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},tot=0;
  cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;tot+=x.n;});
- var NIGHT=[23,0,1,2,3,4,5,6,7],hours=['night'];
+ var NIGHT=[23,0,1,2,3,4,5,6,7],hours=[];
  for(var h=8;h<=22;h++)hours.push(h);
+ hours.push('night');
  var t0=new Date();t0=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()).getTime();
  function meta(d){var dt=new Date(d+'T00:00:00');return {di:Math.round((t0-dt.getTime())/86400000),wd:dt.getDay()};}
  var dt2={};days.forEach(function(d){dt2[d]=0;});
