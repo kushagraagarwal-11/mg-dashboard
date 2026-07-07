@@ -221,7 +221,7 @@ function heatmapDual(bk,ik){
  function kmap(cells){var k={};(cells||[]).forEach(function(x){k[x.hr+'|'+x.d]=(k[x.hr+'|'+x.d]||0)+x.n;});return k;}
  HM={days:days,kb:kmap(bk),ki:kmap(ik),WD:WD,WDN:WDN};
  return '<div class=card><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px"><div><div class=ch2>Bookings &amp; installs · hour × day</div>'+
-  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <b>click a cell for the lead journeys</b></div></div>'+
+  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <span style="color:var(--brand)">pink = installs from that cell&#39;s bookings</span> (matures over time) · <b>click a cell for the lead journeys</b></div></div>'+
   '<select id=hmmode onchange="renderHM(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink);background:var(--card)">'+
   '<option value=both>Both (booking · install)</option><option value=booking>Bookings</option><option value=install>Installs</option></select></div>'+
   '<div id=hmbox></div></div>';
@@ -237,7 +237,7 @@ function renderHM(mode){
   if(mode==='booking')return vb||'';
   if(mode==='install')return vi?('<span style="color:var(--brand)">'+vi+'</span>'):'';
   if(!vb&&!vi)return '';
-  return '<span class=hb>'+(vb||0)+'</span><span class=hi>'+(vi||0)+'</span>';}
+  return (vb||0)+'<span style="color:#B9B3C6"> · </span><span style="color:var(--brand)">'+(vi||0)+'</span>';}
  var s='<div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
   days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">'+(m.di===0?'<span style="color:var(--brand)">today</span><br>':'')+fd(d)+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  var ctb={},cti={};days.forEach(function(d){ctb[d]=0;cti[d]=0;});
@@ -248,8 +248,7 @@ function renderHM(mode){
    var vb=val(HM.kb,h,d),vi=val(HM.ki,h,d);
    rb+=vb;ri+=vi;ctb[d]+=vb;cti[d]+=vi;
    var attrs=(vb&&mode!=='install')?' title="click: see these '+vb+' leads"':'';
-   var diag=(mode==='both'&&(vb||vi))?'background:linear-gradient(to top right, transparent calc(50% - .5px), #C4BCD1 calc(50% - .5px), #C4BCD1 calc(50% + .5px), transparent calc(50% + .5px)), '+WD[m.wd]:'background:'+WD[m.wd];
-   s+='<td'+attrs+' class="'+(mode==='both'?'dg ':'')+((vb&&mode!=='install')?'dr':'')+'" data-d="'+d+'" data-hr="'+h+'" style="'+diag+';color:#3A3348'+((vb&&mode!=='install')?';cursor:pointer':'')+'">'+cell(vb,vi)+'</td>';});
+   s+='<td'+attrs+' class="'+((vb&&mode!=='install')?'dr':'')+'" data-d="'+d+'" data-hr="'+h+'" style="background:'+WD[m.wd]+';color:#3A3348'+((vb&&mode!=='install')?';cursor:pointer':'')+'">'+cell(vb,vi)+'</td>';});
   gtb+=rb;gti+=ri;
   s+='<td class=tot>'+(mode==='both'?((rb||0)+' <span style="color:var(--brand)">· '+(ri||0)+'</span>'):cell(rb,ri))+'</td></tr>';});
  s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+(mode==='both'?((ctb[d]||0)+' <span style="color:var(--brand)">· '+(cti[d]||0)+'</span>'):cell(ctb[d],cti[d]))+'</td>';}).join('')+'<td class=tot>'+(mode==='both'?((gtb||0)+' <span style="color:var(--brand)">· '+(gti||0)+'</span>'):cell(gtb,gti))+'</td></tr></tbody></table></div>';
@@ -392,7 +391,7 @@ function render(D){
   h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||daily[0].d)+' · complete days only · installs by event day</div>'+
    barsChart(daily,D.launch)+'</div>';
  }
- h4+=heatmapDual(t4.hourly_book,t4.hourly_inst);
+ h4+=heatmapDual(t4.hourly_book,t4.hourly_binst||t4.hourly_inst);
  document.getElementById('t4').innerHTML=h4;
  if(document.getElementById('hmbox'))renderHM('both');
  document.getElementById('t4').onclick=function(e){
