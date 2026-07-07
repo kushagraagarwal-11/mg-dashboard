@@ -197,7 +197,7 @@ function barsChart(daily,launch){
  daily.forEach(function(x,i){
   var cx=padL+(i+.5)*gw;
   var hb=ih*x.b/mx,hi=ih*x.i/mx;
-  s+='<rect x='+(cx-bw/2).toFixed(1)+' y='+(padT+ih-hb).toFixed(1)+' width='+bw+' height='+hb.toFixed(1)+' rx=3 fill="#2563EB" opacity=".55"/>';
+  s+='<rect x='+(cx-bw/2).toFixed(1)+' y='+(padT+ih-hb).toFixed(1)+' width='+bw+' height='+hb.toFixed(1)+' rx=3 fill="#BCD0F9"/>';
   s+='<rect x='+(cx-bw/2).toFixed(1)+' y='+(padT+ih-hi).toFixed(1)+' width='+bw+' height='+hi.toFixed(1)+' rx=3 fill="#D9008D"/>';
   s+='<text x='+cx.toFixed(1)+' y='+(padT+ih-hb-5).toFixed(1)+' text-anchor=middle fill="#2563EB" font-size=10.5 font-weight=800>'+x.b+'</text>';
   var yi=padT+ih-hi;
@@ -205,25 +205,29 @@ function barsChart(daily,launch){
   else{s+='<text x='+cx.toFixed(1)+' y='+(yi-4).toFixed(1)+' text-anchor=middle fill="#D9008D" font-size=10 font-weight=800>'+x.i+'</text>';}
   if(i%step===0||i===daily.length-1)s+='<text x='+cx.toFixed(1)+' y='+(H-8)+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(x.d)+'</text>';
   if(launch&&x.d===launch)s+='<line x1='+(cx-gw/2).toFixed(1)+' y1='+padT+' x2='+(cx-gw/2).toFixed(1)+' y2='+(padT+ih)+' stroke="#D9008D" stroke-width=1.5 stroke-dasharray="4 4" opacity=".55"/><text x='+(cx-gw/2+5).toFixed(1)+' y='+(padT+11)+' fill="#D9008D" font-size=10.5 font-weight=800>MG launch</text>';});
- return '<div class=lgd><span><i style="background:#2563EB;opacity:.55"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day, inside the same bar)</span></div>'+
+ return '<div class=lgd><span><i style="background:#BCD0F9"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day, inside the same bar)</span></div>'+
   '<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+s+'</svg></div>';
 }
 
 function heatmap(cells,title,sub,drill){
  if(!cells||!cells.length)return '<div class=card><div class=ch2>'+title+'</div><div class=csub>no data yet</div></div>';
- var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},mx=0,tot=0;
- cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;if(key[x.hr+'|'+x.d]>mx)mx=key[x.hr+'|'+x.d];tot+=x.n;});
+ var WD=['#FDECEC','#E8F0FE','#FDE8F3','#E7F6EC','#FFF4E0','#F1E8FD','#E6F7F8'];   // Sun..Sat
+ var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},tot=0;
+ cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;tot+=x.n;});
  var hrs=cells.map(function(x){return x.hr;}),hmin=Math.min.apply(null,hrs),hmax=Math.max.apply(null,hrs),hours=[];
  for(var h=hmin;h<=hmax;h++)hours.push(h);
- var dt={};days.forEach(function(d){dt[d]=0;});
- var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · darker = more'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
-   days.map(function(d){return '<th>'+fd(d)+'</th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
+ var t0=new Date();t0=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()).getTime();
+ function meta(d){var dt=new Date(d+'T00:00:00');return {di:Math.round((t0-dt.getTime())/86400000),wd:dt.getDay()};}
+ var dt2={};days.forEach(function(d){dt2[d]=0;});
+ var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · columns tinted by weekday — same colour = same weekday (compare D-1 with D-8)'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
+   days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">D-'+m.di+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+fd(d)+' · '+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  hours.forEach(function(h){var rt=0;s+='<tr><td class=hr>'+h+':00</td>';
-  days.forEach(function(d){var v=key[h+'|'+d]||0;rt+=v;dt[d]+=v;var op=mx?v/mx:0;
+  days.forEach(function(d){var v=key[h+'|'+d]||0;rt+=v;dt2[d]+=v;var m=meta(d);
    var attrs=(drill&&v)?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+v+' leads"':'';
-   s+='<td'+attrs+' style="background:'+(v?'rgba(217,0,141,'+(0.07+0.75*op).toFixed(2)+')':'transparent')+';color:'+(op>.55?'#fff':'#3A3348')+(drill&&v?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
+   s+='<td'+attrs+' style="background:'+(v?WD[m.wd]:'transparent')+';color:#3A3348'+(drill&&v?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
   s+='<td class=tot>'+rt+'</td></tr>';});
- s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){return '<td class=tot>'+dt[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
+ s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+dt2[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
  return s;
 }
 var LEAD_API=API.replace('/data4','/data4lead');
