@@ -137,10 +137,11 @@ function funnel(P,Q,mini){
   var big=(i===0)?n(qv):(qr?Math.round(10*qp)/10+'%':'—');
   var ab=(i===0)?'bookings':n(qv);
   var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(10*pp)/10+'% '+n(pv)):'pre —');
+  var dv=(i===0)?dl(pv,qv,'up'):((pr&&qr)?dl(pp,qp,'up'):'<span class="dl fl">—</span>');
   s+='<div class=row><span class=nm>'+st.nm+'</span>'+
    '<span class=bz><span class=b style="width:'+Math.max(1.5,qp)+'%"></span>'+
    (P?'<span class=pk style="width:'+Math.max(2,Math.min(100,pp))+'%"></span>':'')+'</span>'+
-   '<span class=val><span class=p2>'+big+'</span><span class=ab>'+ab+'</span><div class=pr>'+pre+'</div></span></div>';});
+   '<span class=val><span class=p2>'+big+'</span><span class=ab>'+ab+'</span> '+dv+'<div class=pr>'+pre+'</div></span></div>';});
  s+='<div class=legend><span><span class=k1></span>POST bar</span><span><span class=k2></span>PRE (dashed outline)</span><span>all % = share of bookings received</span></div></div>';
  return s;
 }
@@ -158,7 +159,7 @@ function funnelCard(title,sub,blk,mini,extraNote){
 function barsChart(daily,launch){
  var W=1100,H=300,padL=46,padR=16,padT=24,padB=30,iw=W-padL-padR,ih=H-padT-padB;
  var mx=1;daily.forEach(function(x){if(x.b>mx)mx=x.b;if(x.i>mx)mx=x.i;});mx*=1.12;
- var gw=iw/daily.length,bw=Math.min(22,gw*.3);
+ var gw=iw/daily.length,bw=Math.min(34,gw*.55);
  var s='';var g='';
  for(var k=0;k<=4;k++){var gv=Math.round(mx*k/4),gy=padT+ih-(k/4)*ih;
   g+='<line x1='+padL+' y1='+gy.toFixed(1)+' x2='+(W-padR)+' y2='+gy.toFixed(1)+' stroke="#EFEBF5"/>'+
@@ -167,13 +168,15 @@ function barsChart(daily,launch){
  daily.forEach(function(x,i){
   var cx=padL+(i+.5)*gw;
   var hb=ih*x.b/mx,hi=ih*x.i/mx;
-  s+='<rect x='+(cx-bw-1.5).toFixed(1)+' y='+(padT+ih-hb).toFixed(1)+' width='+bw+' height='+hb.toFixed(1)+' rx=3 fill="#2563EB" opacity=".8"/>';
-  s+='<rect x='+(cx+1.5).toFixed(1)+' y='+(padT+ih-hi).toFixed(1)+' width='+bw+' height='+hi.toFixed(1)+' rx=3 fill="#D9008D"/>';
-  s+='<text x='+(cx-bw/2-1.5).toFixed(1)+' y='+(padT+ih-hb-4).toFixed(1)+' text-anchor=middle fill="#2563EB" font-size=10 font-weight=800>'+x.b+'</text>';
-  s+='<text x='+(cx+bw/2+1.5).toFixed(1)+' y='+(padT+ih-hi-4).toFixed(1)+' text-anchor=middle fill="#D9008D" font-size=10 font-weight=800>'+x.i+'</text>';
+  s+='<rect x='+(cx-bw/2).toFixed(1)+' y='+(padT+ih-hb).toFixed(1)+' width='+bw+' height='+hb.toFixed(1)+' rx=3 fill="#2563EB" opacity=".55"/>';
+  s+='<rect x='+(cx-bw/2).toFixed(1)+' y='+(padT+ih-hi).toFixed(1)+' width='+bw+' height='+hi.toFixed(1)+' rx=3 fill="#D9008D"/>';
+  s+='<text x='+cx.toFixed(1)+' y='+(padT+ih-hb-5).toFixed(1)+' text-anchor=middle fill="#2563EB" font-size=10.5 font-weight=800>'+x.b+'</text>';
+  var yi=padT+ih-hi;
+  if(hb-hi<15){s+='<text x='+cx.toFixed(1)+' y='+(yi+13).toFixed(1)+' text-anchor=middle fill="#fff" font-size=10 font-weight=800>'+x.i+'</text>';}
+  else{s+='<text x='+cx.toFixed(1)+' y='+(yi-4).toFixed(1)+' text-anchor=middle fill="#D9008D" font-size=10 font-weight=800>'+x.i+'</text>';}
   if(i%step===0||i===daily.length-1)s+='<text x='+cx.toFixed(1)+' y='+(H-8)+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(x.d)+'</text>';
   if(launch&&x.d===launch)s+='<line x1='+(cx-gw/2).toFixed(1)+' y1='+padT+' x2='+(cx-gw/2).toFixed(1)+' y2='+(padT+ih)+' stroke="#D9008D" stroke-width=1.5 stroke-dasharray="4 4" opacity=".55"/><text x='+(cx-gw/2+5).toFixed(1)+' y='+(padT+11)+' fill="#D9008D" font-size=10.5 font-weight=800>MG launch</text>';});
- return '<div class=lgd><span><i style="background:#2563EB;opacity:.8"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day)</span></div>'+
+ return '<div class=lgd><span><i style="background:#2563EB;opacity:.55"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day, inside the same bar)</span></div>'+
   '<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+s+'</svg></div>';
 }
 
