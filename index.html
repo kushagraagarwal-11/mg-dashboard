@@ -31,8 +31,8 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .fun .nm .mb{color:var(--brand);font-weight:800}
 .fun .bz{position:relative;height:27px}
 .fun.mini .bz{height:19px}
-.fun .b{position:absolute;top:0;left:0;bottom:0;border-radius:0 5px 5px 0;background:var(--brand)}
-.fun .pk{position:absolute;top:-5px;bottom:-5px;width:0;border-left:2.5px dashed #3A3348;opacity:.75}
+.fun .b{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);border-radius:6px;background:var(--brand)}
+.fun .pk{position:absolute;top:-4px;bottom:-4px;left:50%;transform:translateX(-50%);border:2px dashed #3A3348;border-radius:7px;opacity:.6}
 .fun .val{white-space:nowrap}
 .fun .val .p2{font-size:16.5px;font-weight:800;letter-spacing:-.02em}
 .fun .val .ab{font-size:11px;color:var(--faint);font-weight:700;margin-left:4px}
@@ -42,7 +42,7 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .fun.mini .val .pr{font-size:10px}
 .legend{display:flex;gap:16px;font-size:11.5px;color:var(--sub);font-weight:650;margin-top:8px}
 .legend .k1{display:inline-block;width:14px;height:9px;background:var(--brand);border-radius:2px;margin-right:5px}
-.legend .k2{display:inline-block;width:0;height:11px;border-left:2.5px dashed #3A3348;margin-right:5px;vertical-align:-2px}
+.legend .k2{display:inline-block;width:16px;height:10px;border:2px dashed #3A3348;border-radius:3px;margin-right:5px;vertical-align:-1px}
 /* metric table */
 table.t{border-collapse:collapse;width:100%}
 .t thead th{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:right;padding:0 10px 8px;border-bottom:1px solid var(--line)}
@@ -139,9 +139,9 @@ function funnel(P,Q,mini){
   var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(10*pp)/10+'% '+n(pv)):'pre —');
   s+='<div class=row><span class=nm>'+st.nm+'</span>'+
    '<span class=bz><span class=b style="width:'+Math.max(1.5,qp)+'%"></span>'+
-   (P?'<span class=pk style="left:'+Math.max(0,Math.min(100,pp))+'%"></span>':'')+'</span>'+
+   (P?'<span class=pk style="width:'+Math.max(2,Math.min(100,pp))+'%"></span>':'')+'</span>'+
    '<span class=val><span class=p2>'+big+'</span><span class=ab>'+ab+'</span><div class=pr>'+pre+'</div></span></div>';});
- s+='<div class=legend><span><span class=k1></span>POST bar</span><span><span class=k2></span>PRE level (dashed tick)</span><span>all % = share of bookings received</span></div></div>';
+ s+='<div class=legend><span><span class=k1></span>POST bar</span><span><span class=k2></span>PRE (dashed outline)</span><span>all % = share of bookings received</span></div></div>';
  return s;
 }
 function tatline(P,Q){
