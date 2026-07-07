@@ -215,16 +215,15 @@ function heatmap(cells,title,sub,drill){
  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
  var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},tot=0;
  cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;tot+=x.n;});
- var NIGHT=[23,0,1,2,3,4,5,6,7],hours=[];
- for(var h=8;h<=22;h++)hours.push(h);
- hours.push('night');
+ var NIGHT=[0,1,2,3,4,5,6,7],hours=['night'];
+ for(var h=8;h<=23;h++)hours.push(h);
  var t0=new Date();t0=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()).getTime();
  function meta(d){var dt=new Date(d+'T00:00:00');return {di:Math.round((t0-dt.getTime())/86400000),wd:dt.getDay()};}
  var dt2={};days.forEach(function(d){dt2[d]=0;});
  var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · columns tinted by weekday — same colour = same weekday (compare D-1 with D-8)'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
    days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">D-'+m.di+(m.di===0?' <span style="color:var(--brand)">today</span>':'')+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+fd(d)+' · '+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  hours.forEach(function(h){var night=(h==='night');var rt=0;
-  s+='<tr><td class=hr>'+(night?'23:00–8:00':h+':00')+'</td>';
+  s+='<tr><td class=hr>'+(night?'0:00–8:00':((h+1===24?'00':h+1)+':00'))+'</td>';
   days.forEach(function(d){var v=0;
    if(night){NIGHT.forEach(function(nh){v+=key[nh+'|'+d]||0;});}else{v=key[h+'|'+d]||0;}
    rt+=v;dt2[d]+=v;var m=meta(d);
