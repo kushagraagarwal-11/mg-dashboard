@@ -69,12 +69,12 @@ table.t{border-collapse:collapse;width:100%}
 /* cohort matrix: cohorts as column groups (PRE|POST), metrics as rows, mini funnel in header */
 table.mx{border-collapse:collapse;width:100%}
 .mx th{font-size:11px;font-weight:800;color:var(--faint);text-align:center;padding:6px 8px;border-bottom:1px solid var(--line)}
-.mx th.l{text-align:left;min-width:200px}
+.mx th.l{text-align:left;position:sticky;left:0;background:var(--card);z-index:4;border-right:1px solid var(--line)}
 .mx th.gh{color:var(--ink);font-size:14px;border-left:1px solid var(--line2);vertical-align:bottom;min-width:255px}
 .mx th.gh .gn{font-size:10.5px;color:var(--faint);font-weight:700;margin-top:2px}
-.mx td{padding:12px 12px;border-bottom:1px solid var(--line2);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mx td{padding:10px 12px;border-bottom:1px solid var(--line2);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
 .mx tr:last-child td{border-bottom:none}
-.mx td.l{text-align:left;font-size:13px;color:#4A4258;font-weight:650;white-space:normal;min-width:200px;padding-right:16px}
+.mx td.l{text-align:left;font-size:13px;color:#4A4258;font-weight:650;white-space:nowrap;padding-right:18px;position:sticky;left:0;background:var(--card);z-index:3;border-right:1px solid var(--line)}
 .mx td.l .mb{color:var(--brand);font-weight:800}
 .mx td.l .of{color:var(--faint);font-weight:600;font-size:10.5px}
 .mx td.prc{color:#948DA5;font-weight:700;font-size:13px;border-left:1px solid var(--line2)}
