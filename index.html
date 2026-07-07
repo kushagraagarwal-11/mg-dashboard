@@ -135,9 +135,9 @@ var STAGES=[
  {k:'install',nm:'Installed'}];
 var METRICS=[
  {k:'recv_d', lab:'Bookings <span class=of>/ day (grey = total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
- {k:'slot_pct', lab:'Slot proposed % <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
+ {k:'slot_pct', lab:'Slot proposed %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
  {k:'confirm_pct', lab:'Cx confirmed %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
- {k:'assign_pct', lab:'Tech assigned % <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
+ {k:'assign_pct', lab:'Tech assigned %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
  {k:'install_pct', lab:'Installed %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
  {k:'tat_ta', lab:'TAT accept', fmt:ft, good:'down', tat:1},
  {k:'tat_ca', lab:'TAT confirm→assign', fmt:ft, good:'down', tat:1},
@@ -164,7 +164,7 @@ function funnel(P,Q,mini){
   if(P){var gap=2.5,d0=pp-qp;                       // keep the dashed outline visibly apart from the bar edge
    if(Math.abs(d0)<gap)pp=(d0>=0)?qp+gap:Math.max(2,qp-gap);}
   var big=(i===0)?n(qv):(qr?Math.round(qp)+'%':'—');
-  var ab=(i===0)?'bookings':n(qv);
+  var ab=(i===0)?'':n(qv);
   var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(pp)+'% '+n(pv)):'pre —');
   var dv=(i===0)?dl(pv,qv,'up'):((pr&&qr)?dl(pp,qp,'up'):'<span class="dl fl">—</span>');
   s+='<div class=row><span class=nm>'+st.nm+'</span>'+
@@ -209,29 +209,48 @@ function barsChart(daily,launch){
   '<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+s+'</svg></div>';
 }
 
-function heatmap(cells,title,sub,drill){
- if(!cells||!cells.length)return '<div class=card><div class=ch2>'+title+'</div><div class=csub>no data yet</div></div>';
- var WD=['#FDECEC','#E8F0FE','#FDE8F3','#E7F6EC','#FFF4E0','#F1E8FD','#E6F7F8'];   // Sun..Sat
+var HM={};
+function hrLabel(h){return h==='night'?'0:00–8:00':(h+1===24?'00':(h+1))+':00';}
+function heatmapDual(bk,ik){
+ if((!bk||!bk.length)&&(!ik||!ik.length))return '<div class=card><div class=ch2>Bookings & installs · hour × day</div><div class=csub>no data yet</div></div>';
+ var WD=['#FDECEC','#E8F0FE','#FDE8F3','#E7F6EC','#FFF4E0','#F1E8FD','#E6F7F8'];
  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
- var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},tot=0;
- cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;tot+=x.n;});
- var NIGHT=[0,1,2,3,4,5,6,7],hours=['night'];
- for(var h=8;h<=23;h++)hours.push(h);
+ var days=Array.from(new Set((bk||[]).concat(ik||[]).map(function(x){return x.d;}))).sort();
+ function kmap(cells){var k={};(cells||[]).forEach(function(x){k[x.hr+'|'+x.d]=(k[x.hr+'|'+x.d]||0)+x.n;});return k;}
+ HM={days:days,kb:kmap(bk),ki:kmap(ik),WD:WD,WDN:WDN};
+ return '<div class=card><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px"><div><div class=ch2>Bookings &amp; installs · hour × day</div>'+
+  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <b>click a cell for the lead journeys</b></div></div>'+
+  '<select id=hmmode onchange="renderHM(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink);background:var(--card)">'+
+  '<option value=both>Both (booking · install)</option><option value=booking>Bookings</option><option value=install>Installs</option></select></div>'+
+  '<div id=hmbox></div></div>';
+}
+function renderHM(mode){
+ var days=HM.days,WD=HM.WD,WDN=HM.WDN;
  var t0=new Date();t0=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()).getTime();
  function meta(d){var dt=new Date(d+'T00:00:00');return {di:Math.round((t0-dt.getTime())/86400000),wd:dt.getDay()};}
- var dt2={};days.forEach(function(d){dt2[d]=0;});
- var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · columns tinted by weekday — same colour = same weekday (compare D-1 with D-8)'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
-   days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">D-'+m.di+(m.di===0?' <span style="color:var(--brand)">today</span>':'')+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+fd(d)+' · '+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
- hours.forEach(function(h){var night=(h==='night');var rt=0;
-  s+='<tr><td class=hr>'+(night?'0:00–8:00':((h+1===24?'00':h+1)+':00'))+'</td>';
-  days.forEach(function(d){var v=0;
-   if(night){NIGHT.forEach(function(nh){v+=key[nh+'|'+d]||0;});}else{v=key[h+'|'+d]||0;}
-   rt+=v;dt2[d]+=v;var m=meta(d);
-   var attrs=(drill&&v&&!night)?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+v+' leads"':'';
-   s+='<td'+attrs+' style="background:'+WD[m.wd]+';color:#3A3348'+((drill&&v&&!night)?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
-  s+='<td class=tot>'+rt+'</td></tr>';});
- s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+dt2[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
- return s;
+ var NIGHT=[0,1,2,3,4,5,6,7],hours=['night'];
+ for(var h=8;h<=23;h++)hours.push(h);
+ function val(k,h,d){if(h==='night'){var v=0;NIGHT.forEach(function(nh){v+=k[nh+'|'+d]||0;});return v;}return k[h+'|'+d]||0;}
+ function cell(vb,vi){
+  if(mode==='booking')return vb||'';
+  if(mode==='install')return vi?('<span style="color:var(--brand)">'+vi+'</span>'):'';
+  if(!vb&&!vi)return '';
+  return (vb||0)+' <span style="color:var(--brand)">· '+(vi||0)+'</span>';}
+ var s='<div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
+  days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">'+(m.di===0?'<span style="color:var(--brand)">today</span><br>':'')+fd(d)+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
+ var ctb={},cti={};days.forEach(function(d){ctb[d]=0;cti[d]=0;});
+ var gtb=0,gti=0;
+ hours.forEach(function(h){var rb=0,ri=0;
+  s+='<tr><td class=hr>'+hrLabel(h)+'</td>';
+  days.forEach(function(d){var m=meta(d);
+   var vb=val(HM.kb,h,d),vi=val(HM.ki,h,d);
+   rb+=vb;ri+=vi;ctb[d]+=vb;cti[d]+=vi;
+   var attrs=(vb&&mode!=='install')?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+vb+' leads"':'';
+   s+='<td'+attrs+' style="background:'+WD[m.wd]+';color:#3A3348'+((vb&&mode!=='install')?';cursor:pointer':'')+'">'+cell(vb,vi)+'</td>';});
+  gtb+=rb;gti+=ri;
+  s+='<td class=tot>'+cell(rb,ri)+'</td></tr>';});
+ s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+cell(ctb[d],cti[d])+'</td>';}).join('')+'<td class=tot>'+cell(gtb,gti)+'</td></tr></tbody></table></div>';
+ document.getElementById('hmbox').innerHTML=s;
 }
 var LEAD_API=API.replace('/data4','/data4lead');
 function showDrill(d,hr){
@@ -241,10 +260,10 @@ function showDrill(d,hr){
   ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
   document.body.appendChild(ov);}
  ov.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:820px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)">'+
-  '<div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59</div><div class=csub>loading journeys… first open of a cell takes ~5–10s, then it&#39;s cached</div></div>';
+  '<div class=ch2>Leads · '+fd(d)+' · '+(hr==='night'?'0:00–8:00':hr+':00–'+hr+':59')+'</div><div class=csub>loading journeys… first open of a cell takes ~5–10s, then it&#39;s cached</div></div>';
  fetch(LEAD_API+'?d='+d+'&hr='+hr,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
   var box=ov.firstChild;if(!j||j.error){box.querySelector('.csub').textContent='error: '+(j&&j.error||'no data');return;}
-  var h='<div style="display:flex;justify-content:space-between;align-items:baseline"><div class=ch2>Leads · '+fd(d)+' · '+hr+':00–'+hr+':59 <span class=chip>'+j.n+' leads</span></div>'+
+  var h='<div style="display:flex;justify-content:space-between;align-items:baseline"><div class=ch2>Leads · '+fd(d)+' · '+(hr==='night'?'0:00–8:00':hr+':00–'+hr+':59')+' <span class=chip>'+j.n+' leads</span></div>'+
    '<button onclick="document.getElementById(\'drillov\').remove()" style="border:none;background:#E5DFEE;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;color:var(--sub)">close ✕</button></div>'+
    '<div class=csub>Every partner the lead was sent to, in order, and what happened there · times IST</div>';
   (j.leads||[]).forEach(function(L){
@@ -277,9 +296,9 @@ function miniFun(P,Q){
 }
 var MXROWS=[
  {lab:'Bookings', abs:'received', good:'up', absonly:1},
- {lab:'Slot proposed % <span class=mb>MBG</span>', k:'slot_pct', abs:'slot', good:'up'},
+ {lab:'Slot proposed %', k:'slot_pct', abs:'slot', good:'up'},
  {lab:'Cx confirmed %', k:'confirm_pct', abs:'confirm', good:'up'},
- {lab:'Tech assigned % <span class=mb>MBG</span>', k:'assign_pct', abs:'assign', good:'up'},
+ {lab:'Tech assigned %', k:'assign_pct', abs:'assign', good:'up'},
  {lab:'Installed %', k:'install_pct', abs:'install', good:'up'},
  {lab:'TAT accept', k:'tat_ta', tat:1, good:'down'},
  {lab:'TAT confirm→assign', k:'tat_ca', tat:1, good:'down'},
@@ -304,8 +323,8 @@ function cohortMatrix(groups){
     s+='<td class=prc><span class=pa>'+n(pa)+'</span></td><td class=poc><span class=cw><span class=pa>'+n(qa)+'</span>'+stk(dl(pa,qa,r.good),null)+'</span></td>';
    }else{
     var pp=P?P[r.k]:null,qp=Q?Q[r.k]:null,pa2=P?P[r.abs]:null,qa2=Q?Q[r.abs]:null;
-    s+='<td class=prc><span class=cw><span class=pa>'+(pp==null?'—':pp+'%')+'</span>'+stk(null,n(pa2))+'</span></td>'+
-       '<td class=poc><span class=cw><span class=pa>'+(qp==null?'—':qp+'%')+'</span>'+stk(dl(pp,qp,r.good),n(qa2))+'</span></td>';
+    s+='<td class=prc><span class=cw><span class=pa>'+n(pa2)+'</span>'+stk(null,(pp==null?'—':pp+'%'))+'</span></td>'+
+       '<td class=poc><span class=cw><span class=pa>'+n(qa2)+'</span>'+stk(dl(pp,qp,r.good),(qp==null?'—':qp+'%'))+'</span></td>';
    }});
   s+='</tr>';});
  return s+'</tbody></table></div>';
@@ -367,9 +386,9 @@ function render(D){
   h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||daily[0].d)+' · complete days only · installs by event day</div>'+
    barsChart(daily,D.launch)+'</div>';
  }
- h4+=heatmap(t4.hourly_book,'Bookings received · hour × day','when demand lands through the day (IST)',true);
- h4+=heatmap(t4.hourly_inst,'Installs completed · hour × day','when installs finish through the day (IST)');
+ h4+=heatmapDual(t4.hourly_book,t4.hourly_inst);
  document.getElementById('t4').innerHTML=h4;
+ if(document.getElementById('hmbox'))renderHM('both');
  document.getElementById('t4').onclick=function(e){
   var td=e.target.closest?e.target.closest('td.dr'):null;
   if(td)showDrill(td.getAttribute('data-d'),td.getAttribute('data-hr'));};
