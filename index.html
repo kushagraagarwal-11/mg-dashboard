@@ -128,20 +128,20 @@ function pct(a,b){return b?Math.round(100*a/b):null;}
 
 /* every stage % is OF BOOKINGS RECEIVED (manager spec) */
 var STAGES=[
- {k:'received',nm:'Bookings received'},
- {k:'slot',nm:'Slot proposed / accepted <span class=mb>MBG</span>'},
- {k:'confirm',nm:'Customer slot confirmed'},
- {k:'assign',nm:'Technician assigned <span class=mb>MBG</span>'},
+ {k:'received',nm:'Bookings'},
+ {k:'slot',nm:'Slot proposed <span class=mb>MBG</span>'},
+ {k:'confirm',nm:'Cx confirmed'},
+ {k:'assign',nm:'Tech assigned <span class=mb>MBG</span>'},
  {k:'install',nm:'Installed'}];
 var METRICS=[
- {k:'recv_d', lab:'Bookings received <span class=of>/ day (grey = window total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
- {k:'slot_pct', lab:'Slot proposed / accepted <span class=of>% of received</span> <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
- {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
- {k:'assign_pct', lab:'Technician assigned <span class=of>% of received</span> <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
- {k:'install_pct', lab:'Installed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
- {k:'tat_ta', lab:'TAT · task received → CSP accepted', fmt:ft, good:'down', tat:1},
- {k:'tat_ca', lab:'TAT · slot confirmed → tech assigned', fmt:ft, good:'down', tat:1},
- {k:'tat_ai', lab:'TAT · assigned → installed', fmt:ft, good:'down', tat:1}];
+ {k:'recv_d', lab:'Bookings <span class=of>/ day (grey = total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
+ {k:'slot_pct', lab:'Slot proposed % <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
+ {k:'confirm_pct', lab:'Cx confirmed %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
+ {k:'assign_pct', lab:'Tech assigned % <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
+ {k:'install_pct', lab:'Installed %', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
+ {k:'tat_ta', lab:'TAT accept', fmt:ft, good:'down', tat:1},
+ {k:'tat_ca', lab:'TAT confirm→assign', fmt:ft, good:'down', tat:1},
+ {k:'tat_ai', lab:'TAT assign→install', fmt:ft, good:'down', tat:1}];
 function prep(blk,fixedDays){ // recv_d + ALL stage %s rebased on received
  if(!blk)return blk;
  ['PRE','POST'].forEach(function(p){var m=blk[p];if(!m)return;
@@ -215,17 +215,20 @@ function heatmap(cells,title,sub,drill){
  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
  var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},tot=0;
  cells.forEach(function(x){key[x.hr+'|'+x.d]=(key[x.hr+'|'+x.d]||0)+x.n;tot+=x.n;});
- var hrs=cells.map(function(x){return x.hr;}),hmin=Math.min.apply(null,hrs),hmax=Math.max.apply(null,hrs),hours=[];
- for(var h=hmin;h<=hmax;h++)hours.push(h);
+ var NIGHT=[23,0,1,2,3,4,5,6,7],hours=['night'];
+ for(var h=8;h<=22;h++)hours.push(h);
  var t0=new Date();t0=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()).getTime();
  function meta(d){var dt=new Date(d+'T00:00:00');return {di:Math.round((t0-dt.getTime())/86400000),wd:dt.getDay()};}
  var dt2={};days.forEach(function(d){dt2[d]=0;});
  var s='<div class=card><div class=ch2>'+title+'</div><div class=csub><b>'+n(tot)+'</b> total · '+sub+' · columns tinted by weekday — same colour = same weekday (compare D-1 with D-8)'+(drill?' · <b>click a cell for the lead journeys</b>':'')+'</div><div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
    days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">D-'+m.di+(m.di===0?' <span style="color:var(--brand)">today</span>':'')+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+fd(d)+' · '+WDN[m.wd]+(m.di===0?' · partial':'')+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
- hours.forEach(function(h){var rt=0;s+='<tr><td class=hr>'+h+':00</td>';
-  days.forEach(function(d){var v=key[h+'|'+d]||0;rt+=v;dt2[d]+=v;var m=meta(d);
-   var attrs=(drill&&v)?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+v+' leads"':'';
-   s+='<td'+attrs+' style="background:'+(v?WD[m.wd]:'transparent')+';color:#3A3348'+(drill&&v?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
+ hours.forEach(function(h){var night=(h==='night');var rt=0;
+  s+='<tr><td class=hr>'+(night?'11pm–8am':h+':00')+'</td>';
+  days.forEach(function(d){var v=0;
+   if(night){NIGHT.forEach(function(nh){v+=key[nh+'|'+d]||0;});}else{v=key[h+'|'+d]||0;}
+   rt+=v;dt2[d]+=v;var m=meta(d);
+   var attrs=(drill&&v&&!night)?' class=dr data-d="'+d+'" data-hr="'+h+'" title="click: see these '+v+' leads"':'';
+   s+='<td'+attrs+' style="background:'+WD[m.wd]+';color:#3A3348'+((drill&&v&&!night)?';cursor:pointer':'')+'">'+(v||'')+'</td>';});
   s+='<td class=tot>'+rt+'</td></tr>';});
  s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+dt2[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
  return s;
@@ -273,14 +276,14 @@ function miniFun(P,Q){
    (p!=null?'<span class=o2 style="width:'+Math.max(4,Math.min(100,Math.round(p)))+'%"></span>':'')+'</span>';}).join('')+'</div>';
 }
 var MXROWS=[
- {lab:'Bookings received', abs:'received', good:'up', absonly:1},
- {lab:'Slot proposed / accepted <span class=of>% of received</span> <span class=mb>MBG</span>', k:'slot_pct', abs:'slot', good:'up'},
- {lab:'Customer slot confirmed <span class=of>% of received</span>', k:'confirm_pct', abs:'confirm', good:'up'},
- {lab:'Technician assigned <span class=of>% of received</span> <span class=mb>MBG</span>', k:'assign_pct', abs:'assign', good:'up'},
- {lab:'Installed <span class=of>% of received</span>', k:'install_pct', abs:'install', good:'up'},
- {lab:'TAT · task received → CSP accepted', k:'tat_ta', tat:1, good:'down'},
- {lab:'TAT · slot confirmed → tech assigned', k:'tat_ca', tat:1, good:'down'},
- {lab:'TAT · assigned → installed', k:'tat_ai', tat:1, good:'down'}];
+ {lab:'Bookings', abs:'received', good:'up', absonly:1},
+ {lab:'Slot proposed % <span class=mb>MBG</span>', k:'slot_pct', abs:'slot', good:'up'},
+ {lab:'Cx confirmed %', k:'confirm_pct', abs:'confirm', good:'up'},
+ {lab:'Tech assigned % <span class=mb>MBG</span>', k:'assign_pct', abs:'assign', good:'up'},
+ {lab:'Installed %', k:'install_pct', abs:'install', good:'up'},
+ {lab:'TAT accept', k:'tat_ta', tat:1, good:'down'},
+ {lab:'TAT confirm→assign', k:'tat_ca', tat:1, good:'down'},
+ {lab:'TAT assign→install', k:'tat_ai', tat:1, good:'down'}];
 function cohortMatrix(groups){
  var s='<div style="overflow-x:auto"><table class=mx><thead><tr><th class=l></th>';
  groups.forEach(function(g){var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
