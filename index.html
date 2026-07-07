@@ -22,18 +22,24 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .ch2 .chip{font-size:10.5px;font-weight:800;background:#F6E0EE;color:var(--brand);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:2px}
 .csub{font-size:12.5px;color:var(--sub);margin-top:2px;margin-bottom:12px}.csub b{color:var(--ink)}
 .note{font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.6;padding-top:11px;border-top:1px solid var(--line2)}
-/* funnel bars (tab1 hero) */
-.fnl{display:flex;flex-direction:column;gap:9px;margin:4px 0 6px}
-.frow{display:grid;grid-template-columns:230px 1fr 150px;align-items:center;gap:14px}
-.frow .nm{font-size:13px;font-weight:650;color:#4A4258}
-.frow .nm .mb{color:var(--brand);font-weight:800}
-.frow .track{height:23px;border-radius:6px;background:#F3E6F0;position:relative;overflow:hidden}
-.frow .fill{position:absolute;top:0;left:0;bottom:0;border-radius:0 4px 4px 0;background:var(--brand)}
-.frow .val{text-align:right;white-space:nowrap}
-.frow .val .vp{font-size:16px;font-weight:800;letter-spacing:-.02em}
-.frow .val .va{font-size:11px;color:var(--faint);margin-left:6px;font-weight:600}
-@media(max-width:640px){.frow{grid-template-columns:120px 1fr 110px;gap:8px}.frow .nm{font-size:11px}}
-/* metric tables */
+/* triangle funnel */
+.fun{width:100%}
+.fun .frow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;text-align:center}
+.fun .snm{font-size:12px;font-weight:700;color:#4A4258;padding:0 6px 7px}
+.fun .snm .mb{color:var(--brand);font-weight:800}
+.fun svg{display:block;width:100%;height:auto}
+.fun .sv .p2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.fun .sv .ab{font-size:11px;color:var(--faint);font-weight:700;margin-left:4px}
+.fun .sv .pr{font-size:11px;color:#948DA5;font-weight:700;margin-top:1px}
+.fun .sv{padding:8px 6px 0}
+.fun.mini .snm{font-size:10.5px;padding-bottom:5px}
+.fun.mini .sv .p2{font-size:14px}
+.fun.mini .sv .ab{font-size:10px}
+.fun.mini .sv .pr{font-size:10px}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--sub);font-weight:650;margin-top:8px}
+.legend .k1{display:inline-block;width:14px;height:9px;background:var(--brand);opacity:.85;border-radius:2px;margin-right:5px}
+.legend .k2{display:inline-block;width:14px;height:0;border-top:2px dashed #4A4258;margin-right:5px;vertical-align:3px}
+/* metric table */
 table.t{border-collapse:collapse;width:100%}
 .t thead th{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);text-align:right;padding:0 10px 8px;border-bottom:1px solid var(--line)}
 .t thead th.l{text-align:left}
@@ -45,31 +51,28 @@ table.t{border-collapse:collapse;width:100%}
 .t td .p{font-size:16px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
 .t td .a{font-size:11px;color:var(--faint);font-weight:600;margin-left:4px}
 .t td.pre .p{color:#948DA5;font-size:14.5px}
-.t tr.tat td .p{font-size:14px;font-weight:750;color:#4A4258}
 .dl{font-size:11.5px;font-weight:750;display:inline-flex;align-items:center;gap:2px}.up{color:var(--pos)}.dn{color:var(--neg)}.fl{color:var(--faint)}
-/* cut cards grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(345px,1fr));gap:14px}
 .grid .card{margin-bottom:0}
-.cuthdr{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2 .card{margin-bottom:0}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.cuthdr{display:flex;align-items:baseline;gap:8px;margin-bottom:2px;flex-wrap:wrap}
 .cuthdr .nm{font-size:15px;font-weight:800}
 .cuthdr .n{font-size:12px;color:var(--faint);font-weight:700}
-.small .t td{padding:6.5px 8px}.small .t td .p{font-size:14px}.small .t td.pre .p{font-size:12.5px}
-/* charts + heatmap */
-.lgd{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:600}
-.lgd span{display:inline-flex;align-items:center;gap:6px}
-.lgd i{width:14px;height:0;border-top:2.5px solid;border-radius:2px;display:inline-block}
-.chart{width:100%;position:relative}
-.chart svg{display:block;width:100%;height:auto}
-.tip{position:absolute;pointer-events:none;background:#211A2E;color:#fff;border-radius:9px;padding:8px 11px;font-size:12px;line-height:1.55;box-shadow:0 6px 20px rgba(22,16,33,.35);opacity:0;transition:opacity .08s;z-index:5;white-space:nowrap}
-.tip .th{font-weight:700;font-size:11px;color:#B9B3C6;margin-bottom:3px}
-.tip .tr2{display:flex;align-items:center;gap:7px}
-.tip .tr2 i{width:11px;height:0;border-top:2.5px solid;border-radius:2px;display:inline-block}
-.tip .tr2 b{font-weight:800;margin-left:auto;padding-left:12px}
+.tatline{font-size:11.5px;color:var(--sub);font-weight:650;margin-top:9px;padding-top:8px;border-top:1px solid var(--line2)}
+.tatline b{color:#4A4258}
+/* heatmap + modal */
 table.hm{border-collapse:collapse;font-size:12px;width:100%}
 .hm th{color:var(--sub);font-weight:650;padding:4px 5px;text-align:center;font-size:10.5px}.hm th.hr{text-align:right}
 .hm td{text-align:center;font-weight:700;padding:4px 3px;color:#3A3348;font-variant-numeric:tabular-nums;min-width:26px}
 .hm td.hr{color:var(--faint);text-align:right;padding-right:9px;font-weight:600}
 .hm td.tot,.hm th.tot{font-weight:800;color:var(--ink)}.hm tr.totr td{border-top:1px solid var(--line);padding-top:6px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.lgd{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:600}
+.lgd span{display:inline-flex;align-items:center;gap:6px}
+.lgd i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .hide{display:none}.err{color:var(--neg);font-weight:600;padding:22px}
 .warm{color:var(--warm);font-weight:700}
 </style></head><body>
@@ -92,120 +95,91 @@ function fd(d){var a=d.split('-');return (+a[2])+' '+MO[+a[1]-1];}
 function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="dl fl">—</span>';
  var pc=Math.round((post-pre)/Math.abs(pre)*100);if(pc===0)return '<span class="dl fl">0%</span>';
  var up=good==='up'?pc>0:pc<0;return '<span class="dl '+(up?'up':'dn')+'">'+(pc>0?'▲':'▼')+Math.abs(pc)+'%</span>';}
+function pct(a,b){return b?Math.round(1000*a/b)/10:null;}
 
-/* ---- the 8 funnel metrics, one definition everywhere ---- */
+/* every stage % is OF BOOKINGS RECEIVED (manager spec) */
+var STAGES=[
+ {k:'received',nm:'Bookings received'},
+ {k:'slot',nm:'Slot proposed / accepted <span class=mb>MBG</span>'},
+ {k:'confirm',nm:'Customer slot confirmed'},
+ {k:'assign',nm:'Technician assigned <span class=mb>MBG</span>'},
+ {k:'install',nm:'Installed'}];
 var METRICS=[
  {k:'recv_d', lab:'Bookings received <span class=of>/ day (grey = window total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
- {k:'slot_pct',    lab:'Slot proposed / CSP accepted <span class=of>% of received</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
- {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of slot proposed</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
- {k:'assign_pct',  lab:'Technician assigned <span class=of>% of confirmed</span> <span class=mb>· MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
- {k:'install_pct', lab:'Installed <span class=of>% of assigned</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
+ {k:'slot_pct', lab:'Slot proposed / accepted <span class=of>% of received</span> <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'slot'},
+ {k:'confirm_pct', lab:'Customer slot confirmed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'confirm'},
+ {k:'assign_pct', lab:'Technician assigned <span class=of>% of received</span> <span class=mb>MBG</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'assign'},
+ {k:'install_pct', lab:'Installed <span class=of>% of received</span>', fmt:function(v){return v==null?'—':v+'%';}, good:'up', abs:'install'},
  {k:'tat_ta', lab:'TAT · task received → CSP accepted', fmt:ft, good:'down', tat:1},
  {k:'tat_ca', lab:'TAT · slot confirmed → tech assigned', fmt:ft, good:'down', tat:1},
  {k:'tat_ai', lab:'TAT · assigned → installed', fmt:ft, good:'down', tat:1}];
-
-function funnelTable(P,Q,small){
- var s='<table class=t><thead><tr><th class=l>Metric</th><th>PRE</th><th>POST</th><th>Δ</th></tr></thead><tbody>';
- METRICS.forEach(function(m){
-  var pv=P?P[m.k]:null,qv=Q?Q[m.k]:null;
-  var pa=(P&&m.abs)?'<span class=a>'+n(P[m.abs])+'</span>':'',qa=(Q&&m.abs)?'<span class=a>'+n(Q[m.abs])+'</span>':'';
-  s+='<tr'+(m.tat?' class=tat':'')+'><td class=l>'+m.lab+'</td><td class=pre><span class=p>'+m.fmt(pv)+'</span>'+pa+'</td>'+
-     '<td><span class=p>'+m.fmt(qv)+'</span>'+qa+'</td><td>'+dl(pv,qv,m.good)+'</td></tr>';});
- return s+'</tbody></table>';
-}
-/* one merged table: enrolled + non-enrolled side by side */
-function mergedTable(E,N){
- function cell(D,m,pre){var v=D?D[m.k]:null,a=(D&&m.abs)?'<span class=a>'+n(D[m.abs])+'</span>':'';
-  return '<td'+(pre?' class=pre':'')+'><span class=p>'+m.fmt(v)+'</span>'+a+'</td>';}
- var s='<table class=t><thead>'+
-  '<tr><th class=l></th><th colspan=3 style="text-align:center;color:var(--brand)">Enrolled · own-enrolment window</th>'+
-  '<th colspan=3 style="text-align:center;color:#2563EB">Non-enrolled · anchored 1 Jul</th></tr>'+
-  '<tr><th class=l>Metric</th><th>PRE</th><th>POST</th><th>Δ</th><th>PRE</th><th>POST</th><th>Δ</th></tr></thead><tbody>';
- METRICS.forEach(function(m){
-  var ep=E&&E.PRE?E.PRE[m.k]:null,eq=E&&E.POST?E.POST[m.k]:null;
-  var np=N&&N.PRE?N.PRE[m.k]:null,nq=N&&N.POST?N.POST[m.k]:null;
-  s+='<tr'+(m.tat?' class=tat':'')+'><td class=l>'+m.lab+'</td>'+
-   cell(E&&E.PRE,m,1)+cell(E&&E.POST,m)+'<td>'+dl(ep,eq,m.good)+'</td>'+
-   cell(N&&N.PRE,m,1)+cell(N&&N.POST,m)+'<td>'+dl(np,nq,m.good)+'</td></tr>';});
- return s+'</tbody></table>';
-}
-function cutCard(name,ncsp,d,extra){
- var P=d?d.PRE:null,Q=d?d.POST:null;
- return '<div class="card small"><div class=cuthdr><span class=nm>'+name+'</span><span class=n>'+n(ncsp)+' CSPs'+(extra||'')+'</span></div>'+
-        funnelTable(P,Q,1)+'</div>';
-}
-function funnelBars(Q){
- if(!Q)return '';
- var shares=[100,Q.slot_pct||0];
- shares.push(shares[1]*(Q.confirm_pct||0)/100);
- shares.push(shares[2]*(Q.assign_pct||0)/100);
- shares.push(shares[3]*(Q.install_pct||0)/100);
- var rows=[['Bookings received','',n(Q.received)],
-  ['Slot proposed / accepted <span class=mb>MBG</span>',(Q.slot_pct||'—')+'% of received',n(Q.slot)],
-  ['Customer confirmed slot',(Q.confirm_pct||'—')+'% of proposed',n(Q.confirm)],
-  ['Technician assigned <span class=mb>MBG</span>',(Q.assign_pct||'—')+'% of confirmed',n(Q.assign)],
-  ['Installed',(Q.install_pct||'—')+'% of assigned',n(Q.install)]];
- var s='<div class=fnl>';
- rows.forEach(function(r,i){var w=Math.max(3,shares[i]);
-  s+='<div class=frow><span class=nm>'+r[0]+'</span><span class=track><span class=fill style="width:'+w+'%"></span></span>'+
-     '<span class=val><span class=vp>'+(i===0?r[2]:r[1])+'</span><span class=va>'+(i===0?'bookings':r[2])+'</span></span></div>';});
- return s+'</div>';
+function prep(blk,fixedDays){ // recv_d + ALL stage %s rebased on received
+ if(!blk)return blk;
+ ['PRE','POST'].forEach(function(p){var m=blk[p];if(!m)return;
+  if(m.csp_days&&m.csps)m.recv_d=Math.round(m.received*m.csps/m.csp_days);
+  else if(fixedDays)m.recv_d=Math.round(m.received/fixedDays);
+  m.slot_pct=pct(m.slot,m.received);m.confirm_pct=pct(m.confirm,m.received);
+  m.assign_pct=pct(m.assign,m.received);m.install_pct=pct(m.install,m.received);});
+ return blk;
 }
 
-/* ---- line chart + hover (shared engine) ---- */
-function niceScale(mx){if(mx<=0)return{max:4,step:1};
- var raw=mx/4,pow=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)),c=raw/pow,st;
- st=(c<=1?1:c<=2?2:c<=2.5?2.5:c<=5?5:10)*pow;return{max:st*4,step:st};}
-var CH={};
-function lineChart(id,days,series,fmt,mark){
- var W=1100,H=280,padL=46,padR=70,padT=16,padB=28,iw=W-padL-padR,ih=H-padT-padB;
- var mx=0;series.forEach(function(s){s.v.forEach(function(y){if(y!=null&&y>mx)mx=y;});});
- var sc=niceScale(mx*1.04),x=function(i){return padL+(days.length<2?iw/2:iw*i/(days.length-1));},y=function(v){return padT+ih-(v/sc.max)*ih;};
- var g='';for(var k=0;k<=4;k++){var gv=sc.step*k,gy=y(gv);
-  g+='<line x1='+padL+' y1='+gy.toFixed(1)+' x2='+(W-padR)+' y2='+gy.toFixed(1)+' stroke="#EFEBF5" stroke-width=1 />'+
-     '<text x='+(padL-8)+' y='+(gy+3.5).toFixed(1)+' text-anchor=end fill="#8C8699" font-size=10.5>'+fmt(gv)+'</text>';}
- var step=Math.max(1,Math.ceil(days.length/12)),xl='';
- days.forEach(function(d,i){if(i%step&&i!==days.length-1)return;xl+='<text x='+x(i).toFixed(1)+' y='+(H-8)+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(d)+'</text>';});
- var mk='';
- if(mark){var mi=days.indexOf(mark);if(mi>=0){var mxp=x(mi);
-  mk='<line x1='+mxp.toFixed(1)+' y1='+padT+' x2='+mxp.toFixed(1)+' y2='+(padT+ih)+' stroke="#D9008D" stroke-width=1.5 stroke-dasharray="4 4" opacity=".55"/>'+
-     '<text x='+(mxp+5).toFixed(1)+' y='+(padT+11)+' fill="#D9008D" font-size=10.5 font-weight=800>MG launch</text>';}}
- var areas='',paths='',ends='';
- series.forEach(function(s){
-  var p='',first=null,lastI=null;
-  s.v.forEach(function(v,i){if(v==null)return;if(first===null)first=i;lastI=i;p+=(p?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';});
-  if(first===null)return;
-  areas+='<path d="'+p+'L'+x(lastI).toFixed(1)+' '+(padT+ih)+' L'+x(first).toFixed(1)+' '+(padT+ih)+' Z" fill="'+s.c+'" opacity=".07"/>';
-  paths+='<path d="'+p+'" fill="none" stroke="'+s.c+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
-  var lv=s.v[lastI];
-  ends+='<circle cx='+x(lastI).toFixed(1)+' cy='+y(lv).toFixed(1)+' r=4 fill="'+s.c+'" stroke="#FAF9FC" stroke-width=2 />'+
-        '<text x='+(x(lastI)+8).toFixed(1)+' y='+(y(lv)+3.5).toFixed(1)+' fill="#161021" font-size=11.5 font-weight=800>'+fmt(lv)+'</text>';});
- var lg='<div class=lgd>'+series.map(function(s){return '<span><i style="border-color:'+s.c+'"></i>'+s.n+'</span>';}).join('')+'</div>';
- CH[id]={days:days,series:series,fmt:fmt,padL:padL,padR:padR,padT:padT,ih:ih,W:W,H:H};
- return lg+'<div class=chart id='+id+'><svg viewBox="0 0 '+W+' '+H+'">'+g+mk+areas+paths+
-  '<line class=xh x1=0 y1='+padT+' x2=0 y2='+(padT+ih)+' stroke="#B9B3C6" stroke-width=1 opacity=0 />'+ends+xl+'</svg><div class=tip></div></div>';
+/* ---- TRIANGLE funnel: POST = filled shape, PRE = dotted outline (manager sketch) ---- */
+function funnel(P,Q,mini){
+ var W=1000,H=mini?150:180,cy=H/2,hm=(H-10)/2,padX=6,iw=W-2*padX;
+ function fr(m){if(!m||!m.received)return null;return STAGES.map(function(s){return (m[s.k]||0)/m.received;});}
+ var fq=fr(Q),fp=fr(P);
+ function xs(i){return padX+iw*i/4;}
+ function poly(f){var top=[],bot=[];
+  f.forEach(function(v,i){var h=Math.max(.02,v)*hm;top.push(xs(i).toFixed(1)+','+(cy-h).toFixed(1));bot.unshift(xs(i).toFixed(1)+','+(cy+h).toFixed(1));});
+  return top.concat(bot).join(' ');}
+ var sep='';for(var i=1;i<5;i++)sep+='<line x1='+xs(i)+' y1=4 x2='+xs(i)+' y2='+(H-4)+' stroke="#E6E1EE" stroke-width=1 stroke-dasharray="3 4"/>';
+ var svg='<svg viewBox="0 0 '+W+' '+H+'">'+sep+
+  (fq?'<polygon points="'+poly(fq)+'" fill="#D9008D" opacity=".85"/>':'')+
+  (fp?'<polygon points="'+poly(fp)+'" fill="none" stroke="#4A4258" stroke-width="2.5" stroke-dasharray="8 7" stroke-linejoin="round"/>':'')+
+  '</svg>';
+ var names='<div class=frow>'+STAGES.map(function(s){return '<div class=snm>'+s.nm+'</div>';}).join('')+'</div>';
+ var vals='<div class=frow>'+STAGES.map(function(s,i){
+  var qv=Q?Q[s.k]:null,pv=P?P[s.k]:null,qr=Q?Q.received:0,pr=P?P.received:0;
+  var big=(i===0)?n(qv):(qr?pct(qv,qr)+'%':'—');
+  var ab=(i===0)?'bookings':n(qv);
+  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+pct(pv,pr)+'% '+n(pv)):'pre —');
+  return '<div class=sv><span class=p2>'+big+'</span><span class=ab>'+ab+'</span><div class=pr>'+pre+'</div></div>';}).join('')+'</div>';
+ return '<div class="fun'+(mini?' mini':'')+'">'+names+svg+vals+
+  '<div class=legend><span><span class=k1></span>POST (filled)</span><span><span class=k2></span>PRE (dotted outline)</span><span>all % = share of bookings received</span></div></div>';
 }
-function bindHover(){
- Object.keys(CH).forEach(function(id){
-  var m=CH[id],box=document.getElementById(id);if(!box||box._b)return;box._b=1;
-  var svg=box.querySelector('svg'),xh=svg.querySelector('.xh'),tip=box.querySelector('.tip');
-  svg.addEventListener('pointermove',function(ev){
-   var r=svg.getBoundingClientRect(),sx=(ev.clientX-r.left)*m.W/r.width;
-   var iw=m.W-m.padL-m.padR,rel=(sx-m.padL)/(iw||1),i=Math.round(rel*(m.days.length-1));
-   if(i<0)i=0;if(i>m.days.length-1)i=m.days.length-1;
-   var cx=m.padL+(m.days.length<2?iw/2:iw*i/(m.days.length-1));
-   xh.setAttribute('x1',cx);xh.setAttribute('x2',cx);xh.setAttribute('opacity','1');
-   while(tip.firstChild)tip.removeChild(tip.firstChild);
-   var h=document.createElement('div');h.className='th';h.textContent=fd(m.days[i]);tip.appendChild(h);
-   m.series.forEach(function(s){var v=s.v[i];if(v==null)return;
-    var row=document.createElement('div');row.className='tr2';
-    var key=document.createElement('i');key.style.borderColor=s.c;row.appendChild(key);
-    var nm=document.createElement('span');nm.textContent=s.n;row.appendChild(nm);
-    var b=document.createElement('b');b.textContent=m.fmt(v);row.appendChild(b);tip.appendChild(row);});
-   var px=cx*r.width/m.W;
-   tip.style.opacity=1;tip.style.left=Math.max(4,Math.min(px+14,r.width-tip.offsetWidth-8))+'px';tip.style.top='16px';});
-  svg.addEventListener('pointerleave',function(){xh.setAttribute('opacity','0');tip.style.opacity=0;});});
+function tatline(P,Q){
+ function pair(k){return ft(P?P[k]:null)+' → <b>'+ft(Q?Q[k]:null)+'</b>';}
+ return '<div class=tatline>TATs (pre → post): task→accept '+pair('tat_ta')+' · confirm→assign '+pair('tat_ca')+' · assign→install '+pair('tat_ai')+'</div>';
 }
+function funnelCard(title,sub,blk,mini,extraNote){
+ var P=blk?blk.PRE:null,Q=blk?blk.POST:null;
+ return '<div class=card><div class=cuthdr><span class=nm>'+title+'</span><span class=n>'+sub+'</span></div>'+
+  funnel(P,Q,mini)+tatline(P,Q)+(extraNote||'')+'</div>';
+}
+
+/* ---- grouped bars: bookings + installs per day ---- */
+function barsChart(daily,launch){
+ var W=1100,H=300,padL=46,padR=16,padT=24,padB=30,iw=W-padL-padR,ih=H-padT-padB;
+ var mx=1;daily.forEach(function(x){if(x.b>mx)mx=x.b;if(x.i>mx)mx=x.i;});mx*=1.12;
+ var gw=iw/daily.length,bw=Math.min(22,gw*.3);
+ var s='';var g='';
+ for(var k=0;k<=4;k++){var gv=Math.round(mx*k/4),gy=padT+ih-(k/4)*ih;
+  g+='<line x1='+padL+' y1='+gy.toFixed(1)+' x2='+(W-padR)+' y2='+gy.toFixed(1)+' stroke="#EFEBF5"/>'+
+     '<text x='+(padL-8)+' y='+(gy+3.5).toFixed(1)+' text-anchor=end fill="#8C8699" font-size=10.5>'+n(gv)+'</text>';}
+ var step=Math.max(1,Math.ceil(daily.length/14));
+ daily.forEach(function(x,i){
+  var cx=padL+(i+.5)*gw;
+  var hb=ih*x.b/mx,hi=ih*x.i/mx;
+  s+='<rect x='+(cx-bw-1.5).toFixed(1)+' y='+(padT+ih-hb).toFixed(1)+' width='+bw+' height='+hb.toFixed(1)+' rx=3 fill="#2563EB" opacity=".8"/>';
+  s+='<rect x='+(cx+1.5).toFixed(1)+' y='+(padT+ih-hi).toFixed(1)+' width='+bw+' height='+hi.toFixed(1)+' rx=3 fill="#D9008D"/>';
+  s+='<text x='+(cx-bw/2-1.5).toFixed(1)+' y='+(padT+ih-hb-4).toFixed(1)+' text-anchor=middle fill="#2563EB" font-size=10 font-weight=800>'+x.b+'</text>';
+  s+='<text x='+(cx+bw/2+1.5).toFixed(1)+' y='+(padT+ih-hi-4).toFixed(1)+' text-anchor=middle fill="#D9008D" font-size=10 font-weight=800>'+x.i+'</text>';
+  if(i%step===0||i===daily.length-1)s+='<text x='+cx.toFixed(1)+' y='+(H-8)+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(x.d)+'</text>';
+  if(launch&&x.d===launch)s+='<line x1='+(cx-gw/2).toFixed(1)+' y1='+padT+' x2='+(cx-gw/2).toFixed(1)+' y2='+(padT+ih)+' stroke="#D9008D" stroke-width=1.5 stroke-dasharray="4 4" opacity=".55"/><text x='+(cx-gw/2+5).toFixed(1)+' y='+(padT+11)+' fill="#D9008D" font-size=10.5 font-weight=800>MG launch</text>';});
+ return '<div class=lgd><span><i style="background:#2563EB;opacity:.8"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day)</span></div>'+
+  '<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+s+'</svg></div>';
+}
+
 function heatmap(cells,title,sub,drill){
  if(!cells||!cells.length)return '<div class=card><div class=ch2>'+title+'</div><div class=csub>no data yet</div></div>';
  var days=Array.from(new Set(cells.map(function(x){return x.d;}))).sort(),key={},mx=0,tot=0;
@@ -223,7 +197,6 @@ function heatmap(cells,title,sub,drill){
  s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){return '<td class=tot>'+dt[d]+'</td>';}).join('')+'<td class=tot>'+n(tot)+'</td></tr></tbody></table></div></div>';
  return s;
 }
-/* ---- lead-journey modal (heatmap drill) ---- */
 var LEAD_API=API.replace('/data4','/data4lead');
 function showDrill(d,hr){
  var ov=document.getElementById('drillov');
@@ -257,54 +230,64 @@ function showDrill(d,hr){
  }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
-function prep(blk,fixedDays){ // recv_d = bookings/day (integer) + install% re-based on ASSIGNED
- if(!blk)return blk;
- ['PRE','POST'].forEach(function(p){var m=blk[p];if(!m)return;
-  if(m.csp_days&&m.csps)m.recv_d=Math.round(m.received*m.csps/m.csp_days);
-  else if(fixedDays)m.recv_d=Math.round(m.received/fixedDays);
-  m.install_pct=(m.assign?Math.round(1000*m.install/m.assign)/10:null);});
- return blk;
+function mergedTable(E,N){
+ function cell(D,m,pre){var v=D?D[m.k]:null,a=(D&&m.abs)?'<span class=a>'+n(D[m.abs])+'</span>':'';
+  return '<td'+(pre?' class=pre':'')+'><span class=p>'+m.fmt(v)+'</span>'+a+'</td>';}
+ var s='<table class=t><thead>'+
+  '<tr><th class=l></th><th colspan=3 style="text-align:center;color:var(--brand)">Enrolled · own-enrolment window</th>'+
+  '<th colspan=3 style="text-align:center;color:#2563EB">Non-enrolled · anchored 1 Jul</th></tr>'+
+  '<tr><th class=l>Metric</th><th>PRE</th><th>POST</th><th>Δ</th><th>PRE</th><th>POST</th><th>Δ</th></tr></thead><tbody>';
+ METRICS.forEach(function(m){
+  var ep=E&&E.PRE?E.PRE[m.k]:null,eq=E&&E.POST?E.POST[m.k]:null;
+  var np=N&&N.PRE?N.PRE[m.k]:null,nq=N&&N.POST?N.POST[m.k]:null;
+  s+='<tr'+(m.tat?' class=tat':'')+'><td class=l>'+m.lab+'</td>'+
+   cell(E&&E.PRE,m,1)+cell(E&&E.POST,m)+'<td>'+dl(ep,eq,m.good)+'</td>'+
+   cell(N&&N.PRE,m,1)+cell(N&&N.POST,m)+'<td>'+dl(np,nq,m.good)+'</td></tr>';});
+ return s+'</tbody></table>';
 }
+
 function render(D){
  document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
- document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul).';
- /* ---- TAB 1 ---- */
+ document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul) · <b>all stage % = share of bookings received</b>.';
  var t1=D.tab1||{},E=prep(t1.enr||{}),N=prep(t1.non||{},t1.non_days);
+ var F1=prep(t1.enr_f1||null),F2=prep(t1.enr_f2||null);
  (D.tab2||[]).forEach(function(c){prep(c.data);});
  (D.tab3_screens||[]).forEach(function(s){prep(s.data);});
  (D.tab3_engagement||[]).forEach(function(e){prep(e.data);});
+ /* ---- TAB 1: three triangle funnels + metric table ---- */
+ var f2note=(F2&&F2.POST&&F2.POST.received<20)?'<div class=note>Small group — '+n(F2.POST.csps)+' CSPs and only '+n(F2.POST.received)+' post bookings so far; read direction, not decimals.</div>':'';
  document.getElementById('t1').innerHTML=
-  '<div class=card><div class=ch2>Enrolled funnel · POST<span class=chip>'+n(D.enrolled)+' CSPs</span></div>'+
-  '<div class=csub>Current position of bookings received post-enrolment · <span class=mb style="color:var(--brand);font-weight:800">MBG</span> = the two indicators in the CSP&#39;s hands</div>'+
-  funnelBars(E.POST)+'</div>'+
-  '<div class=card><div class=cuthdr><span class=nm>Enrolled vs Non-enrolled</span><span class=n>'+n(D.enrolled)+' enrolled CSPs · non-enrolled '+(t1.non_days||'—')+'d each side</span></div>'+
-  '<div style="overflow-x:auto">'+mergedTable(E,N)+'</div>'+
-  '<div class=note>Per-CSP/day is shown for enrolled only (fixed cohort denominator); non-enrolled columns show totals. Non-enrolled moves with season/city mix — context, not a strict control. Recent bookings are still in flight, so POST funnel %s settle upward over a day or two.</div></div>';
- /* ---- TAB 2 ---- */
+  '<div class=grid2>'+
+  funnelCard('Enrolled — audit done before',(F1&&F1.POST?n(F1.POST.csps):'—')+' CSPs · pre vs post own enrolment',F1||E)+
+  funnelCard('Non-enrolled','anchored 1 Jul · '+(t1.non_days||'—')+'d each side',N)+
+  '</div>'+
+  '<div class=grid2 style="margin-top:14px">'+
+  funnelCard('Enrolled after doing audit',(F2&&F2.POST?n(F2.POST.csps):'—')+' CSPs (audit completed, then enrolled)',F2,false,f2note)+
+  '<div class=card><div class=cuthdr><span class=nm>All metrics</span><span class=n>enrolled (all) vs non-enrolled</span></div><div style="overflow-x:auto">'+mergedTable(E,N)+'</div></div>'+
+  '</div>'+
+  '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Recent bookings are still in flight, so POST %s settle upward over a day or two; PRE (older) is fully matured.</div></div>';
+ /* ---- TAB 2: funnel per feedback cohort ---- */
  var h2='<div class=grid>';
- (D.tab2||[]).forEach(function(c){h2+=cutCard(c.label,c.csps,c.data);});
- h2+='</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohorts = the CSP&#39;s answer on the in-app feedback (flow 3); a CSP&#39;s category is its latest owner/admin answer. Unaware CSPs are being called and walked through the program — watch this column converge to Excited.</div></div>';
+ (D.tab2||[]).forEach(function(c){h2+=funnelCard(c.label,n(c.csps)+' CSPs',c.data,true);});
+ h2+='</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohort = the CSP&#39;s in-app feedback answer (latest owner/admin answer wins). Unaware CSPs are being called and walked through the program — watch that funnel fill toward Excited&#39;s shape.</div></div>';
  document.getElementById('t2').innerHTML=h2;
- /* ---- TAB 3 ---- */
+ /* ---- TAB 3: funnels for screens + engagement ---- */
  var va=D.tab3_view_action||{};
  var vastrip=(va.median_min!=null)?
   '<div class=card><div class=ch2>After viewing the banner → first action on a lead</div>'+
-  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h of viewing · <span style="color:var(--faint)">includes waiting for the next lead to arrive — it is not pure response speed</span></div></div>':'';
+  '<div class=csub>Of <b>'+n(va.n_viewed)+'</b> CSPs who viewed, <b>'+n(va.acted)+'</b> ('+va.acted_pct+'%) took a lead action after the view (slot proposed · tech assigned · install step · declined) · median <b>'+ft(va.median_min)+'</b> · p75 <b>'+ft(va.p75_min)+'</b> · '+va.within24h_pct+'% acted within 24h · <span style="color:var(--faint)">includes waiting for the next lead to arrive — not pure response speed</span></div></div>':'';
  var h3=vastrip+'<div class=card style="padding:14px 20px"><div class=ch2>By banner screen</div><div class=csub>Which MBG card each CSP sees, by its live install-rate state · <span class=warm>noleads excluded — no lead flow in that state, nothing to compare</span></div></div><div class=grid>';
- (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=cutCard(s.key,s.csps,s.data);});
+ (D.tab3_screens||[]).forEach(function(s){if(s.key==='noleads')return;h3+=funnelCard(s.key,n(s.csps)+' CSPs',s.data,true);});
  h3+='</div><div class=card style="padding:14px 20px;margin-top:14px"><div class=ch2>By engagement depth</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div></div><div class=grid>';
- (D.tab3_engagement||[]).forEach(function(e){h3+=cutCard(e.key,e.csps,e.data);});
- h3+='</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with, so their better funnel is correlation, not proof. The honest signal is each group&#39;s own PRE → POST delta, not group vs group.</div></div>';
+ (D.tab3_engagement||[]).forEach(function(e){h3+=funnelCard(e.key,n(e.csps)+' CSPs',e.data,true);});
+ h3+='</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with. The honest signal is each group&#39;s own PRE (dotted) vs POST (filled) shape, not group vs group.</div></div>';
  document.getElementById('t3').innerHTML=h3;
- /* ---- TAB 4 ---- */
+ /* ---- TAB 4: grouped bars + heatmaps ---- */
  var t4=D.tab4||{},daily=t4.daily||[];
- var days=daily.map(function(x){return x.d;});
- var launch=(D.launch&&days.indexOf(D.launch)>=0)?D.launch:null;
  var h4='';
  if(daily.length){
-  h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||days[0])+' · complete days only</div>'+
-   lineChart('c41',days,[{n:'Bookings received',c:'#2563EB',v:daily.map(function(x){return x.b;})},
-                        {n:'Installs',c:'#D9008D',v:daily.map(function(x){return x.i;})}],function(v){return n(Math.round(v));},launch)+'</div>';
+  h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||daily[0].d)+' · complete days only · installs by event day</div>'+
+   barsChart(daily,D.launch)+'</div>';
  }
  h4+=heatmap(t4.hourly_book,'Bookings received · hour × day','when demand lands through the day (IST)',true);
  h4+=heatmap(t4.hourly_inst,'Installs completed · hour × day','when installs finish through the day (IST)');
@@ -312,7 +295,6 @@ function render(D){
  document.getElementById('t4').onclick=function(e){
   var td=e.target.closest?e.target.closest('td.dr'):null;
   if(td)showDrill(td.getAttribute('data-d'),td.getAttribute('data-hr'));};
- bindHover();
 }
 function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
  if(d&&d.tab1)render(d);
