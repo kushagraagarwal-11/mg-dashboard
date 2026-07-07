@@ -149,7 +149,11 @@ function funnel(P,Q,mini){
  var s='<div class="fun'+(mini?' mini':'')+'">';
  STAGES.forEach(function(st,i){
   var qv=Q?(Q[st.k]||0):0,pv=P?(P[st.k]||0):0;
-  var qp=(i===0)?100:(qr?100*qv/qr:0), pp=(i===0)?100:(pr?100*pv/pr:0);
+  var qp,pp;
+  if(i===0){var base=Math.max(qr,pr)||1;qp=100*qv/base;pp=100*pv/base;}
+  else{qp=qr?100*qv/qr:0;pp=pr?100*pv/pr:0;}
+  if(P){var gap=2.5,d0=pp-qp;                       // keep the dashed outline visibly apart from the bar edge
+   if(Math.abs(d0)<gap)pp=(d0>=0)?qp+gap:Math.max(2,qp-gap);}
   var big=(i===0)?n(qv):(qr?Math.round(10*qp)/10+'%':'—');
   var ab=(i===0)?'bookings':n(qv);
   var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(10*pp)/10+'% '+n(pv)):'pre —');
