@@ -69,12 +69,12 @@ table.t{border-collapse:collapse;width:100%}
 /* cohort matrix: cohorts as column groups (PRE|POST), metrics as rows, mini funnel in header */
 table.mx{border-collapse:collapse;width:100%}
 .mx th{font-size:11px;font-weight:800;color:var(--faint);text-align:center;padding:6px 8px;border-bottom:1px solid var(--line)}
-.mx th.l{text-align:left}
+.mx th.l{text-align:left;min-width:200px}
 .mx th.gh{color:var(--ink);font-size:14px;border-left:1px solid var(--line2);vertical-align:bottom;min-width:255px}
 .mx th.gh .gn{font-size:10.5px;color:var(--faint);font-weight:700;margin-top:2px}
-.mx td{padding:8px 9px;border-bottom:1px solid var(--line2);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mx td{padding:12px 12px;border-bottom:1px solid var(--line2);text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
 .mx tr:last-child td{border-bottom:none}
-.mx td.l{text-align:left;font-size:12.5px;color:#4A4258;font-weight:650;white-space:normal}
+.mx td.l{text-align:left;font-size:13px;color:#4A4258;font-weight:650;white-space:normal;min-width:200px;padding-right:16px}
 .mx td.l .mb{color:var(--brand);font-weight:800}
 .mx td.l .of{color:var(--faint);font-weight:600;font-size:10.5px}
 .mx td.prc{color:#948DA5;font-weight:700;font-size:13px;border-left:1px solid var(--line2)}
@@ -301,8 +301,8 @@ function cohortMatrix(groups){
     s+='<td class=prc><span class=pa>'+n(pa)+'</span></td><td class=poc><span class=cw><span class=pa>'+n(qa)+'</span>'+stk(dl(pa,qa,r.good),null)+'</span></td>';
    }else{
     var pp=P?P[r.k]:null,qp=Q?Q[r.k]:null,pa2=P?P[r.abs]:null,qa2=Q?Q[r.abs]:null;
-    s+='<td class=prc><span class=cw><span class=pa>'+n(pa2)+'</span>'+stk(null,(pp==null?'—':pp+'%'))+'</span></td>'+
-       '<td class=poc><span class=cw><span class=pa>'+n(qa2)+'</span>'+stk(dl(pp,qp,r.good),(qp==null?'—':qp+'%'))+'</span></td>';
+    s+='<td class=prc><span class=cw><span class=pa>'+(pp==null?'—':pp+'%')+'</span>'+stk(null,n(pa2))+'</span></td>'+
+       '<td class=poc><span class=cw><span class=pa>'+(qp==null?'—':qp+'%')+'</span>'+stk(dl(pp,qp,r.good),n(qa2))+'</span></td>';
    }});
   s+='</tr>';});
  return s+'</tbody></table></div>';
