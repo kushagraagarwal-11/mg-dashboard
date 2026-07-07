@@ -124,7 +124,7 @@ function fd(d){var a=d.split('-');return (+a[2])+' '+MO[+a[1]-1];}
 function dl(pre,post,good){if(pre==null||post==null||!pre)return '<span class="dl fl">—</span>';
  var pc=Math.round((post-pre)/Math.abs(pre)*100);if(pc===0)return '<span class="dl fl">0%</span>';
  var up=good==='up'?pc>0:pc<0;return '<span class="dl '+(up?'up':'dn')+'">'+(pc>0?'▲':'▼')+Math.abs(pc)+'%</span>';}
-function pct(a,b){return b?Math.round(1000*a/b)/10:null;}
+function pct(a,b){return b?Math.round(100*a/b):null;}
 
 /* every stage % is OF BOOKINGS RECEIVED (manager spec) */
 var STAGES=[
@@ -163,9 +163,9 @@ function funnel(P,Q,mini){
   else{qp=qr?100*qv/qr:0;pp=pr?100*pv/pr:0;}
   if(P){var gap=2.5,d0=pp-qp;                       // keep the dashed outline visibly apart from the bar edge
    if(Math.abs(d0)<gap)pp=(d0>=0)?qp+gap:Math.max(2,qp-gap);}
-  var big=(i===0)?n(qv):(qr?Math.round(10*qp)/10+'%':'—');
+  var big=(i===0)?n(qv):(qr?Math.round(qp)+'%':'—');
   var ab=(i===0)?'bookings':n(qv);
-  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(10*pp)/10+'% '+n(pv)):'pre —');
+  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(pp)+'% '+n(pv)):'pre —');
   var dv=(i===0)?dl(pv,qv,'up'):((pr&&qr)?dl(pp,qp,'up'):'<span class="dl fl">—</span>');
   s+='<div class=row><span class=nm>'+st.nm+'</span>'+
    '<span class=bz><span class=b style="width:'+Math.max(1.5,qp)+'%"></span>'+
