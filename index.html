@@ -80,8 +80,17 @@ table.mx{border-collapse:collapse;width:100%}
 .mx td.prc{color:#948DA5;font-weight:700;font-size:13px;border-left:1px solid var(--line2)}
 .mx td.poc{font-weight:800;font-size:14.5px}
 .mx td .a{font-size:10px;color:var(--faint);font-weight:700;margin-left:3px}
-.mf{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0 auto 5px;width:76px}
-.mf span{height:5px;border-radius:2px;background:var(--brand);display:block}
+.mf{display:flex;flex-direction:column;align-items:center;gap:3px;margin:0 auto 7px;width:160px}
+.mf .r{position:relative;height:9px;width:100%}
+.mf .b2{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;background:var(--brand);border-radius:3px}
+.mf .o2{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;border:1.5px dashed #3A3348;border-radius:3px;opacity:.55}
+.mx .cw{display:inline-flex;align-items:center}
+.mx .stk{display:inline-flex;flex-direction:column;align-items:flex-start;margin-left:4px;line-height:1.2;text-align:left}
+.mx .stk .dl{font-size:9.5px}
+.mx .stk .sb{font-size:10px;color:var(--faint);font-weight:700}
+.mx .pa{font-size:13px;color:#948DA5;font-weight:700}
+.mx td.poc .pa{font-size:15px;color:var(--ink);font-weight:800}
+.mx .pp2{font-size:11px;color:var(--faint);font-weight:700;margin-top:1px}
 /* heatmap + modal */
 table.hm{border-collapse:collapse;font-size:12px;width:100%}
 .hm th{color:var(--sub);font-weight:650;padding:4px 5px;text-align:center;font-size:10.5px}.hm th.hr{text-align:right}
@@ -250,13 +259,17 @@ function showDrill(d,hr){
  }).catch(function(e){var box=ov.firstChild;box.querySelector('.csub').textContent='could not load ('+e+')';});
 }
 
-function miniFun(Q){
+function miniFun(P,Q){
  if(!Q||!Q.received)return '';
- return '<div class=mf>'+STAGES.map(function(s){var v=(Q[s.k]||0)/Q.received;
-  return '<span style="width:'+Math.max(6,Math.round(100*v))+'%"></span>';}).join('')+'</div>';
+ var pr=P?P.received:0;
+ return '<div class=mf>'+STAGES.map(function(s){
+  var q=100*(Q[s.k]||0)/Q.received, p=pr?100*(P[s.k]||0)/pr:null;
+  if(p!=null&&Math.abs(p-q)<3)p=(p>=q)?q+3:Math.max(2,q-3);
+  return '<span class=r><span class=b2 style="width:'+Math.max(5,Math.round(q))+'%"></span>'+
+   (p!=null?'<span class=o2 style="width:'+Math.max(4,Math.min(100,Math.round(p)))+'%"></span>':'')+'</span>';}).join('')+'</div>';
 }
 var MXROWS=[
- {lab:'Bookings received <span class=of>window total</span>', v:function(m){return m?n(m.received):'—';}, raw:function(m){return m?m.received:null;}, good:'up'},
+ {lab:'Bookings received', abs:'received', good:'up', absonly:1},
  {lab:'Slot proposed / accepted <span class=of>% of received</span> <span class=mb>MBG</span>', k:'slot_pct', abs:'slot', good:'up'},
  {lab:'Customer slot confirmed <span class=of>% of received</span>', k:'confirm_pct', abs:'confirm', good:'up'},
  {lab:'Technician assigned <span class=of>% of received</span> <span class=mb>MBG</span>', k:'assign_pct', abs:'assign', good:'up'},
@@ -266,21 +279,27 @@ var MXROWS=[
  {lab:'TAT · assigned → installed', k:'tat_ai', tat:1, good:'down'}];
 function cohortMatrix(groups){
  var s='<div style="overflow-x:auto"><table class=mx><thead><tr><th class=l></th>';
- groups.forEach(function(g){var Q=g.data?g.data.POST:null;
-  s+='<th colspan=2 class=gh>'+miniFun(Q)+g.label+'<div class=gn>'+n(g.csps)+' CSPs</div></th>';});
+ groups.forEach(function(g){var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
+  s+='<th colspan=2 class=gh>'+miniFun(P,Q)+g.label+'<div class=gn>'+n(g.csps)+' CSPs</div></th>';});
  s+='</tr><tr><th class=l>Metric</th>';
  groups.forEach(function(){s+='<th style="border-left:1px solid var(--line2)">PRE</th><th>POST</th>';});
  s+='</tr></thead><tbody>';
+ function stk(top,bot){return '<span class=stk>'+(top?'<span>'+top+'</span>':'')+(bot?'<span class=sb>'+bot+'</span>':'')+'</span>';}
  MXROWS.forEach(function(r){
   s+='<tr><td class=l>'+r.lab+'</td>';
   groups.forEach(function(g){
    var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
-   var pv,qv,pf,qf,ab='';
-   if(r.v){pv=r.raw(P);qv=r.raw(Q);pf=r.v(P);qf=r.v(Q);}
-   else if(r.tat){pv=P?P[r.k]:null;qv=Q?Q[r.k]:null;pf=ft(pv);qf=ft(qv);}
-   else{pv=P?P[r.k]:null;qv=Q?Q[r.k]:null;pf=(pv==null?'—':pv+'%');qf=(qv==null?'—':qv+'%');
-    ab=(Q&&r.abs)?'<span class=a>'+n(Q[r.abs])+'</span>':'';}
-   s+='<td class=prc>'+pf+'</td><td class=poc>'+qf+ab+' '+dl(pv,qv,r.good)+'</td>';});
+   if(r.tat){
+    var pv=P?P[r.k]:null,qv=Q?Q[r.k]:null;
+    s+='<td class=prc>'+ft(pv)+'</td><td class=poc><span class=cw><span class=pa>'+ft(qv)+'</span>'+stk(dl(pv,qv,r.good),null)+'</span></td>';
+   }else if(r.absonly){
+    var pa=P?P[r.abs]:null,qa=Q?Q[r.abs]:null;
+    s+='<td class=prc><span class=pa>'+n(pa)+'</span></td><td class=poc><span class=cw><span class=pa>'+n(qa)+'</span>'+stk(dl(pa,qa,r.good),null)+'</span></td>';
+   }else{
+    var pp=P?P[r.k]:null,qp=Q?Q[r.k]:null,pa2=P?P[r.abs]:null,qa2=Q?Q[r.abs]:null;
+    s+='<td class=prc><span class=cw><span class=pa>'+n(pa2)+'</span>'+stk(null,(pp==null?'—':pp+'%'))+'</span></td>'+
+       '<td class=poc><span class=cw><span class=pa>'+n(qa2)+'</span>'+stk(dl(pp,qp,r.good),(qp==null?'—':qp+'%'))+'</span></td>';
+   }});
   s+='</tr>';});
  return s+'</tbody></table></div>';
 }
