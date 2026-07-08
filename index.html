@@ -19,6 +19,8 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(22,16,33,.14),0 0 0 .5px rgba(22,16,33,.04)}
 .gtab{border:none;background:transparent;color:var(--sub);border-radius:9px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .gtab.on{background:var(--card);color:var(--brand);box-shadow:0 1px 3px rgba(22,16,33,.14)}
+.htab{border:none;background:transparent;color:var(--sub);border-radius:9px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.htab.on{background:var(--card);color:var(--warm);box-shadow:0 1px 3px rgba(22,16,33,.14)}
 .card{background:var(--card);border:1px solid #EAE5F1;border-radius:16px;box-shadow:0 4px 24px rgba(22,16,33,.06);padding:18px 20px;margin-bottom:14px;position:relative}
 .ch2{font-size:15px;font-weight:750;letter-spacing:-.01em}
 .ch2 .chip{font-size:10.5px;font-weight:800;background:#F6E0EE;color:var(--brand);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:2px}
@@ -126,6 +128,10 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
  <div id=grainw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:12px">
   <button class="gtab on" data-g=booking>Booking-level</button>
   <button class=gtab data-g=csp>CSP-level</button>
+ </div>
+ <div id=ghw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:12px">
+  <button class="htab on" data-h=all>All flows</button>
+  <button class=htab data-h=nogh>Exclude G,H</button>
  </div>
 </div>
 <div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=t4 class=hide></div>
@@ -363,12 +369,16 @@ function mergedTable(E,N){
  return s+'</tbody></table>';
 }
 
-var RAW=null,GRAIN='booking';
-function gd(D){return (GRAIN==='csp'&&D.csp)?Object.assign({},D,D.csp):D;} // tab1-3 from selected grain; tab4/opens/asof stay booking
+var RAW=null,GRAIN='booking',GH='all';
+function gd(D){
+  var key = (GRAIN==='csp'?'csp':'')+(GH==='nogh'?(GRAIN==='csp'?'_noGH':'noGH'):'');
+  var sub = key ? D[key] : null;                 // '' -> base D; 'csp'/'noGH'/'csp_noGH'
+  return sub ? Object.assign({}, D, sub) : D;    // tab1-3 from selected grain+flow; tab4/opens/asof stay booking-all
+}
 function render(D0){RAW=D0;var D=gd(D0);
  document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
  document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul) · <b>all stage % = share of bookings received, matured within 48h (same cap both sides)</b>'+
-  (GRAIN==='csp'?' \u00b7 <span style=\"color:var(--brand);font-weight:800\">CSP-level: a booking counts once per CSP it reached; each judged on its own furthest stage, 48h from when it received the booking</span>':' \u00b7 booking-level: one row per booking (final CSP)')+'.';
+  (GRAIN==='csp'?' \u00b7 <span style=\"color:var(--brand);font-weight:800\">CSP-level: a booking counts once per CSP it reached; each judged on its own furthest stage, 48h from when it received the booking</span>':' \u00b7 booking-level: one row per booking (final CSP)')+(GH==='nogh'?' \u00b7 <span style=\"color:var(--warm);font-weight:800\">excluding G &amp; H flows (no-fee bookings)</span>':'')+'.';
  var t1=D.tab1||{},E=prep(t1.enr||{}),N=prep(t1.non||{},t1.non_days);
  var F1=prep(t1.enr_f1||null),F2=prep(t1.enr_f2||null);
  (D.tab2||[]).forEach(function(c){prep(c.data);});
@@ -421,4 +431,5 @@ function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}
 boot();setInterval(boot,300000);
 document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');['t1','t2','t3','t4'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==b.dataset.t);});};});
 document.querySelectorAll('.gtab').forEach(function(b){b.onclick=function(){if(b.dataset.g==='csp'&&(!RAW||!RAW.csp)){return;}document.querySelectorAll('.gtab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');GRAIN=b.dataset.g;if(RAW)render(RAW);};});
+document.querySelectorAll('.htab').forEach(function(b){b.onclick=function(){var need=(b.dataset.h==='nogh');if(need&&(!RAW||!(GRAIN==='csp'?RAW.csp_noGH:RAW.noGH))){return;}document.querySelectorAll('.htab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');GH=b.dataset.h;if(RAW)render(RAW);};});
 </script></body></html>
