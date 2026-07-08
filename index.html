@@ -183,9 +183,10 @@ function funnel(P,Q,mini){
   else{qp=qr?100*qv/qr:0;pp=pr?100*pv/pr:0;}
   if(P){var gap=2.5,d0=pp-qp;                       // keep the dashed outline visibly apart from the bar edge
    if(Math.abs(d0)<gap)pp=(d0>=0)?qp+gap:Math.max(2,qp-gap);}
-  var big=(i===0)?n(qv):(qr?Math.round(qp)+'%':'—');
-  var ab=(i===0)?'':n(qv);
-  var pre=(i===0)?('pre '+n(pv)):(pr?('pre '+Math.round(pp)+'% '+n(pv)):'pre —');
+  var CSP=(GRAIN==='csp');
+  var big=(i===0)?(CSP?'100%':n(qv)):(qr?Math.round(qp)+'%':'—');
+  var ab=(i===0||CSP)?'':n(qv);
+  var pre=(i===0)?('pre '+(CSP?'100%':n(pv))):(pr?('pre '+Math.round(pp)+'%'+(CSP?'':' '+n(pv))):'pre —');
   var dv=(i===0)?dl(pv,qv,'up'):((pr&&qr)?dl(pp,qp,'up'):'<span class="dl fl">—</span>');
   s+='<div class=row><span class=nm>'+st.nm+'</span>'+
    '<span class=bz><span class=b style="width:'+Math.max(1.5,qp)+'%"></span>'+
@@ -325,6 +326,7 @@ var MXROWS=[
  {lab:'TAT confirm→assign', k:'tat_ca', tat:1, good:'down'},
  {lab:'TAT assign→install', k:'tat_ai', tat:1, good:'down'}];
 function cohortMatrix(groups){
+ var CSP=(GRAIN==='csp');
  var s='<div style="overflow-x:auto"><table class=mx><thead><tr><th class=l></th>';
  groups.forEach(function(g){var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
   s+='<th colspan=2 class=gh>'+miniFun(P,Q)+g.label+'<div class=gn>'+n(g.csps)+' CSPs</div></th>';});
@@ -341,17 +343,25 @@ function cohortMatrix(groups){
     s+='<td class=prc>'+ft(pv)+'</td><td class=poc><span class=pa>'+ft(qv)+'</span><sup>'+dl(pv,qv,r.good)+'</sup></td>';
    }else if(r.absonly){
     var pa=P?P[r.abs]:null,qa=Q?Q[r.abs]:null;
-    s+='<td class=prc><span class=pa>'+n(pa)+'</span></td><td class=poc><span class=pa>'+n(qa)+'</span><sup>'+dl(pa,qa,r.good)+'</sup></td>';
+    if(CSP){s+='<td class=prc><span class=pa>100%</span></td><td class=poc><span class=pa>100%</span><sup>'+dl(pa,qa,r.good)+'</sup></td>';}
+    else{s+='<td class=prc><span class=pa>'+n(pa)+'</span></td><td class=poc><span class=pa>'+n(qa)+'</span><sup>'+dl(pa,qa,r.good)+'</sup></td>';}
    }else{
     var pp=P?P[r.k]:null,qp=Q?Q[r.k]:null,pa2=P?P[r.abs]:null,qa2=Q?Q[r.abs]:null;
-    s+='<td class=prc><span class=pa>'+n(pa2)+'</span><span class=sb2>'+(pp==null?'—':pp+'%')+'</span></td>'+
-       '<td class=poc><span class=pa>'+n(qa2)+'</span><sup>'+dl(pp,qp,r.good)+'</sup><span class=sb2>'+(qp==null?'—':qp+'%')+'</span></td>';
+    if(CSP){s+='<td class=prc><span class=pa>'+(pp==null?'—':pp+'%')+'</span></td>'+
+       '<td class=poc><span class=pa>'+(qp==null?'—':qp+'%')+'</span><sup>'+dl(pp,qp,r.good)+'</sup></td>';}
+    else{s+='<td class=prc><span class=pa>'+n(pa2)+'</span><span class=sb2>'+(pp==null?'—':pp+'%')+'</span></td>'+
+       '<td class=poc><span class=pa>'+n(qa2)+'</span><sup>'+dl(pp,qp,r.good)+'</sup><span class=sb2>'+(qp==null?'—':qp+'%')+'</span></td>';}
    }});
   s+='</tr>';});
  return s+'</tbody></table></div>';
 }
 function mergedTable(E,N){
+ var CSP=(GRAIN==='csp');
  function cell(D,m,pre){var v=D?D[m.k]:null;
+  if(CSP){
+   if(m.k==='recv_d')return '<td'+(pre?' class=pre':'')+'><span class=p>100%</span></td>';
+   if(/_pct$/.test(m.k))return '<td'+(pre?' class=pre':'')+'><span class=p>'+(v==null?'—':v+'%')+'</span></td>';
+   return '<td'+(pre?' class=pre':'')+'><span class=p>'+m.fmt(v)+'</span></td>';}
   if(m.abs&&/_pct$/.test(m.k)){var c=D?D[m.abs]:null;
    return '<td'+(pre?' class=pre':'')+'><span class=p>'+n(c)+'</span><span class=a>'+(v==null?'—':v+'%')+'</span></td>';}
   var a=(D&&m.abs)?'<span class=a>'+n(D[m.abs])+'</span>':'';
@@ -393,10 +403,9 @@ function render(D0){RAW=D0;var D=gd(D0);
   funnelCard('Enrolled — audit done before',(F1&&F1.POST?n(F1.POST.csps):'—')+' CSPs · pre vs post own enrolment',F1||E)+
   funnelCard('Non-enrolled','anchored 1 Jul · '+(t1.non_days||'—')+'d each side',N)+
   '</div>'+
-  '<div class=grid2 style="margin-top:14px">'+
   funnelCard('Enrolled after doing audit',(F2&&F2.POST?n(F2.POST.csps):'—')+' CSPs (audit completed, then enrolled)',F2,false,f2note)+
-  '<div class=card><div class=cuthdr><span class=nm>All metrics</span><span class=n>enrolled (all) vs non-enrolled</span></div><div style="overflow-x:auto">'+mergedTable(E,N)+'</div></div>'+
-  '</div>'+
+  '<div class=card style="margin-top:14px"><div class=ch2>All cohorts · PRE vs POST</div><div class=csub>enrolled (audit before / after audit) vs non-enrolled · mini funnel = POST shape · all % of received</div>'+
+   cohortMatrix([{label:'Enrolled · audit before',csps:(F1&&F1.POST?F1.POST.csps:0),data:F1},{label:'Enrolled · after audit',csps:(F2&&F2.POST?F2.POST.csps:0),data:F2},{label:'Non-enrolled',csps:(N&&N.POST?N.POST.csps:0),data:N}])+'</div>'+
   '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Every stage is capped at 48h maturity on BOTH sides (apples-to-apples). The newest ~2 days of POST bookings have not lived their full 48h yet, so they read slightly low until they do.</div></div>';
  /* ---- TAB 2: funnel per feedback cohort ---- */
  var h2='<div class=card><div class=ch2>Feedback cohorts · PRE vs POST</div><div class=csub>Cohort = the CSP&#39;s in-app feedback answer · mini funnel = POST shape · all % of received</div>'+
