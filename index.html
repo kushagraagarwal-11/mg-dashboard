@@ -95,6 +95,10 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
 .hm th{color:var(--sub);font-weight:650;padding:4px 5px;text-align:center;font-size:10.5px}.hm th.hr{text-align:right}
 .hm td{text-align:center;font-weight:700;padding:4px 3px;color:#3A3348;font-variant-numeric:tabular-nums;min-width:26px;border-bottom:.5px solid #DDD8E5}
 .hm td.hr{color:var(--faint);text-align:right;padding-right:9px;font-weight:600;white-space:nowrap}
+.hm .fu{white-space:nowrap}
+.hm .fu .fi{color:var(--brand);vertical-align:3px;font-size:10.5px}
+.hm .fu .fs{color:#B9B3C6;margin:0 1px;font-size:12px}
+.hm .fu .fb{vertical-align:-3px;font-size:10.5px}
 .hm td.dg{position:relative;min-width:44px;height:30px;padding:0}
 .hm td.dg .hb{position:absolute;top:1px;left:4px;font-size:10.5px}
 .hm td.dg .hi{position:absolute;bottom:1px;right:4px;font-size:10.5px;color:var(--brand)}
@@ -221,7 +225,7 @@ function heatmapDual(bk,ik){
  function kmap(cells){var k={};(cells||[]).forEach(function(x){k[x.hr+'|'+x.d]=(k[x.hr+'|'+x.d]||0)+x.n;});return k;}
  HM={days:days,kb:kmap(bk),ki:kmap(ik),WD:WD,WDN:WDN};
  return '<div class=card><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px"><div><div class=ch2>Bookings &amp; installs · hour × day</div>'+
-  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <span style="color:var(--brand)">pink = installs from that cell&#39;s bookings</span> (matures over time) · <b>click a cell for the lead journeys</b></div></div>'+
+  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · cells = <span style="color:var(--brand)">installs</span>/bookings — installs from that cell&#39;s own bookings (matures over time) · <b>click a cell for the lead journeys</b></div></div>'+
   '<select id=hmmode onchange="renderHM(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink);background:var(--card)">'+
   '<option value=both>Both (booking · install)</option><option value=booking>Bookings</option><option value=install>Installs</option></select></div>'+
   '<div id=hmbox></div></div>';
@@ -237,7 +241,7 @@ function renderHM(mode){
   if(mode==='booking')return vb||'';
   if(mode==='install')return vi?('<span style="color:var(--brand)">'+vi+'</span>'):'';
   if(!vb&&!vi)return '';
-  return (vb||0)+'<span style="color:#B9B3C6"> · </span><span style="color:var(--brand)">'+(vi||0)+'</span>';}
+  return '<span class=fu><span class=fi>'+(vi||0)+'</span><span class=fs>/</span><span class=fb>'+(vb||0)+'</span></span>';}
  var s='<div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
   days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">'+(m.di===0?'<span style="color:var(--brand)">today</span><br>':'')+fd(d)+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  var ctb={},cti={};days.forEach(function(d){ctb[d]=0;cti[d]=0;});
@@ -250,8 +254,8 @@ function renderHM(mode){
    var attrs=(vb&&mode!=='install')?' title="click: see these '+vb+' leads"':'';
    s+='<td'+attrs+' class="'+((vb&&mode!=='install')?'dr':'')+'" data-d="'+d+'" data-hr="'+h+'" style="background:'+WD[m.wd]+';color:#3A3348'+((vb&&mode!=='install')?';cursor:pointer':'')+'">'+cell(vb,vi)+'</td>';});
   gtb+=rb;gti+=ri;
-  s+='<td class=tot>'+(mode==='both'?((rb||0)+' <span style="color:var(--brand)">· '+(ri||0)+'</span>'):cell(rb,ri))+'</td></tr>';});
- s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+(mode==='both'?((ctb[d]||0)+' <span style="color:var(--brand)">· '+(cti[d]||0)+'</span>'):cell(ctb[d],cti[d]))+'</td>';}).join('')+'<td class=tot>'+(mode==='both'?((gtb||0)+' <span style="color:var(--brand)">· '+(gti||0)+'</span>'):cell(gtb,gti))+'</td></tr></tbody></table></div>';
+  s+='<td class=tot>'+cell(rb,ri)+'</td></tr>';});
+ s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+cell(ctb[d],cti[d])+'</td>';}).join('')+'<td class=tot>'+cell(gtb,gti)+'</td></tr></tbody></table></div>';
  document.getElementById('hmbox').innerHTML=s;
 }
 var LEAD_API=API.replace('/data4','/data4lead');
