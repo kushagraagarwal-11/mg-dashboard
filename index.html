@@ -225,15 +225,15 @@ function barsChart(daily,launch){
 
 var HM={};
 function hrLabel(h){return h==='night'?'0:00–8:00':(h+1===24?'00':(h+1))+':00';}
-function heatmapDual(bk,ik){
+function heatmapDual(bk,iev,ibk){
  if((!bk||!bk.length)&&(!ik||!ik.length))return '<div class=card><div class=ch2>Bookings & installs · hour × day</div><div class=csub>no data yet</div></div>';
  var WD=['#FDECEC','#E8F0FE','#FDE8F3','#E7F6EC','#FFF4E0','#F1E8FD','#E6F7F8'];
  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
- var days=Array.from(new Set((bk||[]).concat(ik||[]).map(function(x){return x.d;}))).sort();
+ var days=Array.from(new Set((bk||[]).concat(iev||[]).concat(ibk||[]).map(function(x){return x.d;}))).sort();
  function kmap(cells){var k={};(cells||[]).forEach(function(x){k[x.hr+'|'+x.d]=(k[x.hr+'|'+x.d]||0)+x.n;});return k;}
- HM={days:days,kb:kmap(bk),ki:kmap(ik),WD:WD,WDN:WDN};
+ HM={days:days,kb:kmap(bk),kiev:kmap(iev),kibk:kmap(ibk||iev),WD:WD,WDN:WDN};
  return '<div class=card><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px"><div><div class=ch2>Bookings &amp; installs · hour × day</div>'+
-  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · cells = <span style="color:var(--brand)">installs</span>/bookings — installs from that cell&#39;s own bookings (matures over time) · <b>click a cell for the lead journeys</b></div></div>'+
+  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <b>Both</b> = <span style="color:var(--brand)">installs</span>/bookings from that cell&#39;s own bookings (matures) · <b>Installs</b> = installs <b>completed</b> that day (event-day, matches the bar chart) · <b>click a cell for the lead journeys</b></div></div>'+
   '<select id=hmmode onchange="renderHM(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink);background:var(--card)">'+
   '<option value=both>Both (booking · install)</option><option value=booking>Bookings</option><option value=install>Installs</option></select></div>'+
   '<div id=hmbox></div></div>';
@@ -245,6 +245,7 @@ function renderHM(mode){
  var NIGHT=[0,1,2,3,4,5,6,7],hours=['night'];
  for(var h=8;h<=23;h++)hours.push(h);
  function val(k,h,d){if(h==='night'){var v=0;NIGHT.forEach(function(nh){v+=k[nh+'|'+d]||0;});return v;}return k[h+'|'+d]||0;}
+ var KI=(mode==='install')?HM.kiev:HM.kibk;   // Installs = completed that day (event); Both = from that cell's bookings
  function cell(vb,vi){
   if(mode==='booking')return vb||'';
   if(mode==='install')return vi?('<span style="color:var(--brand)">'+vi+'</span>'):'';
@@ -257,7 +258,7 @@ function renderHM(mode){
  hours.forEach(function(h){var rb=0,ri=0;
   s+='<tr><td class=hr>'+hrLabel(h)+'</td>';
   days.forEach(function(d){var m=meta(d);
-   var vb=val(HM.kb,h,d),vi=val(HM.ki,h,d);
+   var vb=val(HM.kb,h,d),vi=val(KI,h,d);
    rb+=vb;ri+=vi;ctb[d]+=vb;cti[d]+=vi;
    var attrs=(vb&&mode!=='install')?' title="click: see these '+vb+' leads"':'';
    s+='<td'+attrs+' class="'+((vb&&mode!=='install')?'dr':'')+'" data-d="'+d+'" data-hr="'+h+'" style="background:'+WD[m.wd]+';color:#3A3348'+((vb&&mode!=='install')?';cursor:pointer':'')+'">'+cell(vb,vi)+'</td>';});
@@ -406,7 +407,7 @@ function render(D0){RAW=D0;var D=gd(D0);
   h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||daily[0].d)+' · complete days only · installs by event day</div>'+
    barsChart(daily,D.launch)+'</div>';
  }
- h4+=heatmapDual(t4.hourly_book,t4.hourly_binst||t4.hourly_inst);
+ h4+=heatmapDual(t4.hourly_book,t4.hourly_inst,t4.hourly_binst);
  document.getElementById('t4').innerHTML=h4;
  if(document.getElementById('hmbox'))renderHM('both');
  document.getElementById('t4').onclick=function(e){
