@@ -258,7 +258,7 @@ function renderHM(mode){
   if(!vb&&!vi)return '';
   return '<span class=fu><span class=fi>'+(vi||0)+'</span><span class=fs>/</span><span class=fb>'+(vb||0)+'</span></span>';}
  var s='<div style="overflow-x:auto"><table class=hm><thead><tr><th class=hr>Hour</th>'+
-  days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'">'+(m.di===0?'<span style="color:var(--brand)">today</span><br>':'')+fd(d)+'<div style="font-size:9px;color:var(--faint);font-weight:600">'+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
+  days.map(function(d){var m=meta(d);return '<th style="background:'+WD[m.wd]+'"><div style="font-weight:800">'+(m.di===0?'<span style="color:var(--brand)">D-0 today</span>':'D-'+m.di)+'</div><div style="font-size:9px;color:var(--faint);font-weight:600">'+fd(d)+' · '+WDN[m.wd]+'</div></th>';}).join('')+'<th class=tot>Total</th></tr></thead><tbody>';
  var ctb={},cti={};days.forEach(function(d){ctb[d]=0;cti[d]=0;});
  var gtb=0,gti=0;
  hours.forEach(function(h){var rb=0,ri=0;
