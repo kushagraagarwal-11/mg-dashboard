@@ -399,12 +399,7 @@ function render(D0){RAW=D0;var D=gd(D0);
  /* ---- TAB 1: three triangle funnels + metric table ---- */
  var f2note=(F2&&F2.POST&&F2.POST.received<20)?'<div class=note>Small group — '+n(F2.POST.csps)+' CSPs and only '+n(F2.POST.received)+' post bookings so far; read direction, not decimals.</div>':'';
  document.getElementById('t1').innerHTML=
-  '<div class=grid2>'+
-  funnelCard('Enrolled — audit done before',(F1&&F1.POST?n(F1.POST.csps):'—')+' CSPs · pre vs post own enrolment',F1||E)+
-  funnelCard('Non-enrolled','anchored 1 Jul · '+(t1.non_days||'—')+'d each side',N)+
-  '</div>'+
-  funnelCard('Enrolled after doing audit',(F2&&F2.POST?n(F2.POST.csps):'—')+' CSPs (audit completed, then enrolled)',F2,false,f2note)+
-  '<div class=card style="margin-top:14px"><div class=ch2>All cohorts · PRE vs POST</div><div class=csub>enrolled (audit before / after audit) vs non-enrolled · mini funnel = POST shape · all % of received</div>'+
+  '<div class=card><div class=ch2>Overview cohorts · PRE vs POST</div><div class=csub>enrolled (audit before / after audit) vs non-enrolled · mini funnel = POST shape · all % of received</div>'+
    cohortMatrix([{label:'Enrolled · audit before',csps:(F1&&F1.POST?F1.POST.csps:0),data:F1},{label:'Enrolled · after audit',csps:(F2&&F2.POST?F2.POST.csps:0),data:F2},{label:'Non-enrolled',csps:(N&&N.POST?N.POST.csps:0),data:N}])+'</div>'+
   '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Every stage is capped at 48h maturity on BOTH sides (apples-to-apples). The newest ~2 days of POST bookings have not lived their full 48h yet, so they read slightly low until they do.</div></div>';
  /* ---- TAB 2: funnel per feedback cohort ---- */
