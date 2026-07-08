@@ -373,7 +373,9 @@ var RAW=null,GRAIN='booking',GH='all';
 function gd(D){
   var key = (GRAIN==='csp'?'csp':'')+(GH==='nogh'?(GRAIN==='csp'?'_noGH':'noGH'):'');
   var sub = key ? D[key] : null;                 // '' -> base D; 'csp'/'noGH'/'csp_noGH'
-  return sub ? Object.assign({}, D, sub) : D;    // tab1-3 from selected grain+flow; tab4/opens/asof stay booking-all
+  var r = sub ? Object.assign({}, D, sub) : D;
+  if(GH==='nogh'&&D.tab4_noGH){r=Object.assign({},r,{tab4:D.tab4_noGH});}  // DoD/heatmap also respect the flow filter
+  return r;
 }
 function render(D0){RAW=D0;var D=gd(D0);
  document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
