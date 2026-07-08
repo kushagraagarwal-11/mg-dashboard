@@ -352,7 +352,7 @@ function mergedTable(E,N){
 
 function render(D){
  document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
- document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul) · <b>all stage % = share of bookings received</b>.';
+ document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul) · <b>all stage % = share of bookings received, matured within 48h of the booking (same cap both sides)</b>.';
  var t1=D.tab1||{},E=prep(t1.enr||{}),N=prep(t1.non||{},t1.non_days);
  var F1=prep(t1.enr_f1||null),F2=prep(t1.enr_f2||null);
  (D.tab2||[]).forEach(function(c){prep(c.data);});
@@ -369,7 +369,7 @@ function render(D){
   funnelCard('Enrolled after doing audit',(F2&&F2.POST?n(F2.POST.csps):'—')+' CSPs (audit completed, then enrolled)',F2,false,f2note)+
   '<div class=card><div class=cuthdr><span class=nm>All metrics</span><span class=n>enrolled (all) vs non-enrolled</span></div><div style="overflow-x:auto">'+mergedTable(E,N)+'</div></div>'+
   '</div>'+
-  '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Recent bookings are still in flight, so POST %s settle upward over a day or two; PRE (older) is fully matured.</div></div>';
+  '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Every stage is capped at 48h maturity on BOTH sides (apples-to-apples). The newest ~2 days of POST bookings have not lived their full 48h yet, so they read slightly low until they do.</div></div>';
  /* ---- TAB 2: funnel per feedback cohort ---- */
  var h2='<div class=card><div class=ch2>Feedback cohorts · PRE vs POST</div><div class=csub>Cohort = the CSP&#39;s in-app feedback answer · mini funnel = POST shape · all % of received</div>'+
   cohortMatrix((D.tab2||[]).map(function(c){return {label:c.label,csps:c.csps,data:c.data};}))+'</div><div class=card><div class=note style="border:none;margin:0;padding:0">Cohort = the CSP&#39;s in-app feedback answer (latest owner/admin answer wins). Unaware CSPs are being called and walked through the program — watch that funnel fill toward Excited&#39;s shape.</div></div>';
