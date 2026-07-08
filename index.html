@@ -126,12 +126,12 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
   <button class=tab data-t=t4>④ DoD · Hour-of-day</button>
  </div>
  <div id=grainw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:12px">
-  <button class="gtab on" data-g=booking>Booking-level</button>
-  <button class=gtab data-g=csp>CSP-level</button>
+  <button class=gtab data-g=booking>Booking-level</button>
+  <button class="gtab on" data-g=csp>CSP-level</button>
  </div>
  <div id=ghw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:12px">
-  <button class="htab on" data-h=all>All flows</button>
-  <button class=htab data-h=nogh>Exclude G,H</button>
+  <button class=htab data-h=all>All flows</button>
+  <button class="htab on" data-h=nogh>Exclude G,H</button>
  </div>
 </div>
 <div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=t4 class=hide></div>
@@ -369,7 +369,7 @@ function mergedTable(E,N){
  return s+'</tbody></table>';
 }
 
-var RAW=null,GRAIN='booking',GH='all';
+var RAW=null,GRAIN='csp',GH='nogh';
 function gd(D){
   var key = (GRAIN==='csp'?'csp':'')+(GH==='nogh'?(GRAIN==='csp'?'_noGH':'noGH'):'');
   var sub = key ? D[key] : null;                 // '' -> base D; 'csp'/'noGH'/'csp_noGH'
