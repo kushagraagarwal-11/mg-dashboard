@@ -21,6 +21,8 @@ h1{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;letter-spacing:-.02em;line
 .gtab.on{background:var(--card);color:var(--brand);box-shadow:0 1px 3px rgba(22,16,33,.14)}
 .htab{border:none;background:transparent;color:var(--sub);border-radius:9px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 .htab.on{background:var(--card);color:var(--warm);box-shadow:0 1px 3px rgba(22,16,33,.14)}
+.mgtab{border:none;background:transparent;color:var(--sub);border-radius:8px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.mgtab.on{background:var(--card);color:var(--brand);box-shadow:0 1px 3px rgba(22,16,33,.14)}
 .card{background:var(--card);border:1px solid #EAE5F1;border-radius:16px;box-shadow:0 4px 24px rgba(22,16,33,.06);padding:18px 20px;margin-bottom:14px;position:relative}
 .ch2{font-size:15px;font-weight:750;letter-spacing:-.01em}
 .ch2 .chip{font-size:10.5px;font-weight:800;background:#F6E0EE;color:var(--brand);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:2px}
@@ -391,7 +393,7 @@ function mergedTable(E,N){
  return s+'</tbody></table>';
 }
 
-var RAW=null,GRAIN='csp',GH='nogh';
+var RAW=null,GRAIN='csp',GH='nogh',MGMODE='actual';
 function gd(D){
   var key = (GRAIN==='csp'?'csp':'')+(GH==='nogh'?(GRAIN==='csp'?'_noGH':'noGH'):'');
   var sub = key ? D[key] : null;                 // '' -> base D; 'csp'/'noGH'/'csp_noGH'
@@ -409,11 +411,12 @@ function render(D0){RAW=D0;var D=gd(D0);
  (D.tab3_screens||[]).forEach(function(s){prep(s.data);});
  (D.tab3_engagement||[]).forEach(function(e){prep(e.data);});
  (D.tab_mg||[]).forEach(function(c){prep(c.data);});
+ (D.tab_mg_proj||[]).forEach(function(c){prep(c.data);});
  /* ---- TAB 1: three triangle funnels + metric table ---- */
  var f2note=(F2&&F2.POST&&F2.POST.received<20)?'<div class=note>Small group — '+n(F2.POST.csps)+' CSPs and only '+n(F2.POST.received)+' post bookings so far; read direction, not decimals.</div>':'';
  document.getElementById('t1').innerHTML=
   '<div class=card><div class=ch2>Overview cohorts · PRE vs POST</div><div class=csub>enrolled (audit before / after audit) vs non-enrolled · mini funnel = POST shape · all % of received</div>'+
-   cohortMatrix([{label:'Enrolled · audit before',csps:(F1&&F1.POST?F1.POST.csps:0),data:F1},{label:'Enrolled · after audit',csps:(F2&&F2.POST?F2.POST.csps:0),data:F2},{label:'Non-enrolled',csps:(N&&N.POST?N.POST.csps:0),data:N}])+'</div>'+
+   cohortMatrix([{label:'Enrolled · audit before',csps:(F1&&F1.POST?F1.POST.csps:0),data:F1},{label:'Enrolled · after audit',csps:(F2&&F2.POST?F2.POST.csps:0),data:F2},{label:'Non-enrolled',csps:(D.non_csps!=null?D.non_csps:(N&&N.POST?N.POST.csps:0)),data:N}])+'</div>'+
   '<div class=card style="margin-top:14px"><div class=note style="border:none;margin:0;padding:0">Per-CSP/day shown for enrolled only. Non-enrolled moves with season/city mix — context, not a strict control. Every stage is capped at 48h maturity on BOTH sides (apples-to-apples). The newest ~2 days of POST bookings have not lived their full 48h yet, so they read slightly low until they do.</div></div>';
  /* ---- TAB 2: funnel per feedback cohort ---- */
  var h2='<div class=card><div class=ch2>Feedback cohorts · PRE vs POST</div><div class=csub>Cohort = the CSP&#39;s in-app feedback answer · mini funnel = POST shape · all % of received</div>'+
@@ -430,17 +433,28 @@ function render(D0){RAW=D0;var D=gd(D0);
   cohortMatrix((D.tab3_engagement||[]).map(function(e){return {label:e.key,csps:e.csps,data:e.data};}))+'</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with. The honest signal is each group&#39;s own PRE (dotted) vs POST (filled) shape, not group vs group.</div></div>';
  document.getElementById('t3').innerHTML=h3;
  /* ---- TAB MG: payout cohorts ---- */
- var mg=(D.tab_mg||[]),mc=(RAW&&RAW.mg_counts)||{mg_lo:0,mg_hi:0,no_mg:0},gate=(RAW&&RAW.mg_gate)||60;
- var getMG=(mc.mg_lo||0)+(mc.mg_hi||0),notMG=(mc.no_mg||0),totMG=getMG+notMG;
- function mgtile(big,lab,sub,col){return '<div style="flex:1;min-width:150px"><div style="font-size:30px;font-weight:800;color:'+(col||'var(--ink)')+'">'+n(big)+(totMG?' <span style=\'font-size:14px;color:var(--faint)\'>'+Math.round(100*big/totMG)+'%</span>':'')+'</div><div style="font-size:13px;font-weight:700;color:#4A4258;margin-top:2px">'+lab+'</div>'+(sub?'<div style="font-size:11px;color:var(--faint);margin-top:1px">'+sub+'</div>':'')+'</div>';}
- var hmg='<div class=card><div class=ch2>Who is getting the \u20b910k guarantee</div><div class=csub>enrolled CSPs only \u00b7 lead = a booking the customer confirmed a slot for (it then goes to the CSP)</div>'+
-  '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px">'+
-   mgtile(getMG,"Getting MG","of "+n(totMG)+" enrolled","var(--brand)")+
-   mgtile(mc.mg_lo,"\u2514 &lt;3 leads","auto \u20b910k (too few leads)")+
-   mgtile(mc.mg_hi,"\u2514 \u22653 leads \u00b7 passed gate","\u2265"+gate+"% install conversion")+
+ var MGP=(MGMODE==='projected'),gate=(RAW&&RAW.mg_gate)||60,rem=(RAW&&RAW.month_remaining)||0,ted=(RAW&&RAW.too_early_days)||7;
+ var mg=(MGP?(D.tab_mg_proj||[]):(D.tab_mg||[]));
+ var mc=(RAW&&(MGP?RAW.mgp_counts:RAW.mg_counts))||{mg_lo:0,mg_hi:0,no_mg:0,too_early:0};
+ var pt=(RAW&&RAW.mg_proj_totals)||{};
+ var getMG=(mc.mg_lo||0)+(mc.mg_hi||0),notMG=(mc.no_mg||0),tooE=(mc.too_early||0),totMG=getMG+notMG+tooE;
+ function mgtile(big,lab,sub,col){return '<div style="flex:1;min-width:140px"><div style="font-size:29px;font-weight:800;color:'+(col||'var(--ink)')+'">'+n(big)+(totMG?' <span style=\'font-size:13px;color:var(--faint)\'>'+Math.round(100*big/totMG)+'%</span>':'')+'</div><div style="font-size:12.5px;font-weight:700;color:#4A4258;margin-top:2px">'+lab+'</div>'+(sub?'<div style="font-size:11px;color:var(--faint);margin-top:1px">'+sub+'</div>':'')+'</div>';}
+ function mgt2(big,lab){return '<div style="flex:1;min-width:130px"><div style="font-size:24px;font-weight:800;color:var(--ink)">'+n(big)+'</div><div style="font-size:12px;font-weight:700;color:var(--faint);margin-top:2px">'+lab+'</div></div>';}
+ var tog='<div id=mgw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:11px;margin-left:12px;vertical-align:middle">'+
+   '<button class="mgtab'+(MGP?'':' on')+'" onclick="MGMODE=\'actual\';render(RAW)">Actual to-date</button>'+
+   '<button class="mgtab'+(MGP?' on':'')+'" onclick="MGMODE=\'projected\';render(RAW)">Projected month-end</button></div>';
+ var tiles=mgtile(getMG,"Getting MG","of "+n(totMG)+" enrolled","var(--brand)")+
+   mgtile(mc.mg_lo,"\u2514 &lt;3 leads",(MGP?"projected":"")+" auto \u20b910k","#7A2E8E")+
+   mgtile(mc.mg_hi,"\u2514 \u22653 leads \u00b7 passed gate","\u2265"+gate+"% conversion","#7A2E8E")+
    mgtile(notMG,"Not getting MG","\u22653 leads \u00b7 below "+gate+"% gate","var(--neg)")+
-  '</div></div>'+
-  '<div class=card style="margin-top:14px"><div class=ch2>MG payout cohorts \u00b7 PRE vs POST</div><div class=csub>each cohort\u2019s full funnel \u00b7 mini funnel = POST shape \u00b7 all % of received</div>'+
+   (MGP?mgtile(tooE,"Too early","<"+ted+" live days \u00b7 held at actuals","var(--faint)"):'');
+ var projline=MGP?'<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--line2)">'+
+   mgt2(pt.bookings,"Projected bookings (month-end)")+mgt2(pt.installs,"Projected installs (month-end)")+
+   '<div style="flex:2;min-width:200px;font-size:11px;color:var(--faint);align-self:center">Pro-rata to 31st on each CSP\u2019s own live days ('+rem+' days left). Conversion is unchanged (scale-invariant) \u2014 only the &lt;3-lead line moves. Linear run-rate <b>forecast</b>, not a settlement.</div>'+
+   '</div>':'';
+ var hmg='<div class=card><div class=ch2>Who is getting the \u20b910k guarantee'+tog+'</div><div class=csub>enrolled CSPs only \u00b7 lead = a booking the customer confirmed a slot for (it then goes to the CSP)'+(MGP?' \u00b7 <b style="color:var(--brand)">projected to month-end</b>':'')+'</div>'+
+  '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px">'+tiles+'</div>'+projline+'</div>'+
+  '<div class=card style="margin-top:14px"><div class=ch2>MG payout cohorts \u00b7 PRE vs POST</div><div class=csub>each cohort\u2019s full funnel \u00b7 mini funnel = POST shape \u00b7 all % of received'+(MGP?' \u00b7 membership = projected month-end':'')+'</div>'+
    cohortMatrix(mg.map(function(c){return {label:c.label,csps:c.csps,data:c.data};}))+'</div>';
  document.getElementById('tmg').innerHTML=hmg;
  /* ---- TAB 4: grouped bars + heatmaps ---- */
