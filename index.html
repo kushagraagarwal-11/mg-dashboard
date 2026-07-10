@@ -207,8 +207,10 @@ function funnelCard(title,sub,blk,mini,extraNote){
 }
 
 /* ---- grouped bars: bookings + installs per day ---- */
-function barsChart(daily,launch){
- var W=1100,H=300,padL=46,padR=16,padT=24,padB=30,iw=W-padL-padR,ih=H-padT-padB;
+function barsChart(daily,launch,weather){
+ var hasW=weather&&typeof weather==='object';
+ var W=1100,H=hasW?324:300,padL=46,padR=16,padT=24,padB=hasW?50:30,iw=W-padL-padR,ih=H-padT-padB;
+ var wY=padT+ih+19,dlY=hasW?(H-8):(H-8);
  var mx=1;daily.forEach(function(x){if(x.b>mx)mx=x.b;if(x.i>mx)mx=x.i;});mx*=1.12;
  var gw=iw/daily.length,bw=Math.min(34,gw*.55);
  var s='';var g='';
@@ -225,9 +227,12 @@ function barsChart(daily,launch){
   var yi=padT+ih-hi;
   if(hb-hi<15){s+='<text x='+cx.toFixed(1)+' y='+(yi+13).toFixed(1)+' text-anchor=middle fill="#fff" font-size=10 font-weight=800>'+x.i+'</text>';}
   else{s+='<text x='+cx.toFixed(1)+' y='+(yi-4).toFixed(1)+' text-anchor=middle fill="#D9008D" font-size=10 font-weight=800>'+x.i+'</text>';}
-  if(i%step===0||i===daily.length-1)s+='<text x='+cx.toFixed(1)+' y='+(H-8)+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(x.d)+'</text>';
+  if(hasW&&weather[x.d]){var sym=weather[x.d];var fs=sym.length>3?11:15;
+   s+='<text x='+cx.toFixed(1)+' y='+wY+' text-anchor=middle font-size='+fs+'>'+sym+'</text>';}
+  if(i%step===0||i===daily.length-1)s+='<text x='+cx.toFixed(1)+' y='+dlY+' text-anchor=middle fill="#8C8699" font-size=10.5>'+fd(x.d)+'</text>';
   if(launch&&x.d===launch)s+='<line x1='+(cx-gw/2).toFixed(1)+' y1='+padT+' x2='+(cx-gw/2).toFixed(1)+' y2='+(padT+ih)+' stroke="#D9008D" stroke-width=1.5 stroke-dasharray="4 4" opacity=".55"/><text x='+(cx-gw/2+5).toFixed(1)+' y='+(padT+11)+' fill="#D9008D" font-size=10.5 font-weight=800>MG launch</text>';});
- return '<div class=lgd><span><i style="background:#BCD0F9"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day, inside the same bar)</span></div>'+
+ var wleg=hasW?'<div style="font-size:11px;color:var(--faint);margin:-2px 0 6px;line-height:1.5">\u2600\ufe0f sunny \u00b7 \u26c5 cloudy \u00b7 \ud83c\udf26\ufe0f drizzle \u00b7 \ud83c\udf27\ufe0f rain \u00b7 \u26c8\ufe0f heavy rain \u00b7 \ud83c\udf27\ufe0f\ud83c\udf19 rained only at night (wet poles next morning)</div>':'';
+ return '<div class=lgd><span><i style="background:#BCD0F9"></i>Bookings received</span><span><i style="background:#D9008D"></i>Installs (event day, inside the same bar)</span></div>'+wleg+
   '<div class=chart><svg viewBox="0 0 '+W+' '+H+'">'+g+s+'</svg></div>';
 }
 
@@ -423,7 +428,7 @@ function render(D0){RAW=D0;var D=gd(D0);
  var h4='';
  if(daily.length){
   h4+='<div class=card><div class=ch2>Bookings &amp; installs per day · enrolled CSPs</div><div class=csub>Day on day since '+fd(t4.from||daily[0].d)+' · complete days only · installs by event day</div>'+
-   barsChart(daily,D.launch)+'</div>';
+   barsChart(daily,D.launch,(RAW&&RAW.tab4||{}).weather)+'</div>';
  }
  h4+=heatmapDual(t4.hourly_book,t4.hourly_inst,t4.hourly_binst);
  document.getElementById('t4').innerHTML=h4;
