@@ -93,6 +93,7 @@ table.mx{border-collapse:collapse;width:100%}
 .mx .sb2{font-size:10.5px;color:var(--faint);font-weight:700;margin-left:4px}
 .mx .pa{font-size:13px;color:#948DA5;font-weight:700}
 .mx td.poc .pa{font-size:15px;color:var(--ink);font-weight:800}
+.mx .jn{font-size:11px;color:var(--brand);font-weight:800;margin-bottom:1px}
 .mx .pp2{font-size:11px;color:var(--faint);font-weight:700;margin-top:1px}
 /* heatmap + modal */
 table.hm{border-collapse:collapse;font-size:12px;width:100%}
@@ -123,7 +124,8 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
   <button class="tab on" data-t=t1>① Overview</button>
   <button class=tab data-t=t2>② Feedback cohorts</button>
   <button class=tab data-t=t3>③ Banner campaigns</button>
-  <button class=tab data-t=t4>④ DoD · Hour-of-day</button>
+  <button class=tab data-t=tmg>④ MG payout</button>
+  <button class=tab data-t=t4>⑤ DoD · Hour-of-day</button>
  </div>
  <div id=grainw style="display:inline-flex;gap:2px;background:#E5DFEE;padding:3px;border-radius:12px">
   <button class=gtab data-g=booking>Booking-level</button>
@@ -134,7 +136,7 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
   <button class="htab on" data-h=nogh>Exclude G,H</button>
  </div>
 </div>
-<div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=t4 class=hide></div>
+<div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=tmg class=hide></div><div id=t4 class=hide></div>
 <script>
 var API='https://web-production-9f444.up.railway.app/data4';
 function n(v){return v==null?'—':Number(v).toLocaleString('en-IN');}
@@ -338,7 +340,10 @@ function cohortMatrix(groups){
  groups.forEach(function(g){var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
   s+='<th colspan=2 class=gh>'+miniFun(P,Q)+g.label+'<div class=gn>'+n(g.csps)+' CSPs</div></th>';});
  s+='</tr><tr><th class=l>Metric</th>';
- groups.forEach(function(){s+='<th style="border-left:1px solid var(--line2)">PRE</th><th>POST</th>';});
+ groups.forEach(function(g){var P=g.data?g.data.PRE:null,Q=g.data?g.data.POST:null;
+  var pj=(CSP&&P&&P.received!=null)?'<div class=jn>'+n(P.received)+'</div>':'';
+  var qj=(CSP&&Q&&Q.received!=null)?'<div class=jn>'+n(Q.received)+'</div>':'';
+  s+='<th style="border-left:1px solid var(--line2)">'+pj+'PRE</th><th>'+qj+'POST</th>';});
  s+='</tr></thead><tbody>';
  function stk(top,bot){return '<span class=stk>'+(top?'<span>'+top+'</span>':'')+(bot?'<span class=sb>'+bot+'</span>':'')+'</span>';}
  MXROWS.forEach(function(r){
@@ -403,6 +408,7 @@ function render(D0){RAW=D0;var D=gd(D0);
  (D.tab2||[]).forEach(function(c){prep(c.data);});
  (D.tab3_screens||[]).forEach(function(s){prep(s.data);});
  (D.tab3_engagement||[]).forEach(function(e){prep(e.data);});
+ (D.tab_mg||[]).forEach(function(c){prep(c.data);});
  /* ---- TAB 1: three triangle funnels + metric table ---- */
  var f2note=(F2&&F2.POST&&F2.POST.received<20)?'<div class=note>Small group — '+n(F2.POST.csps)+' CSPs and only '+n(F2.POST.received)+' post bookings so far; read direction, not decimals.</div>':'';
  document.getElementById('t1').innerHTML=
@@ -423,6 +429,20 @@ function render(D0){RAW=D0;var D=gd(D0);
   '<div class=card><div class=ch2>By engagement depth · PRE vs POST</div><div class=csub>From the banner&#39;s own events: Viewed → Scrolled → Tapped Guarantee → Ticket tap (CSP counts once if any owner/admin fired it)</div>'+
   cohortMatrix((D.tab3_engagement||[]).map(function(e){return {label:e.key,csps:e.csps,data:e.data};}))+'</div><div class=card><div class=note style="border:none;margin:0;padding:0"><b>Read with care:</b> engagement is self-selected — CSPs who view/scroll/tap are the more active ones to begin with. The honest signal is each group&#39;s own PRE (dotted) vs POST (filled) shape, not group vs group.</div></div>';
  document.getElementById('t3').innerHTML=h3;
+ /* ---- TAB MG: payout cohorts ---- */
+ var mg=(D.tab_mg||[]),mc=(RAW&&RAW.mg_counts)||{mg_lo:0,mg_hi:0,no_mg:0},gate=(RAW&&RAW.mg_gate)||60;
+ var getMG=(mc.mg_lo||0)+(mc.mg_hi||0),notMG=(mc.no_mg||0),totMG=getMG+notMG;
+ function mgtile(big,lab,sub,col){return '<div style="flex:1;min-width:150px"><div style="font-size:30px;font-weight:800;color:'+(col||'var(--ink)')+'">'+n(big)+(totMG?' <span style=\'font-size:14px;color:var(--faint)\'>'+Math.round(100*big/totMG)+'%</span>':'')+'</div><div style="font-size:13px;font-weight:700;color:#4A4258;margin-top:2px">'+lab+'</div>'+(sub?'<div style="font-size:11px;color:var(--faint);margin-top:1px">'+sub+'</div>':'')+'</div>';}
+ var hmg='<div class=card><div class=ch2>Who is getting the \u20b910k guarantee</div><div class=csub>enrolled CSPs only \u00b7 lead = a booking the customer confirmed a slot for (it then goes to the CSP)</div>'+
+  '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:14px">'+
+   mgtile(getMG,"Getting MG","of "+n(totMG)+" enrolled","var(--brand)")+
+   mgtile(mc.mg_lo,"\u2514 &lt;3 leads","auto \u20b910k (too few leads)")+
+   mgtile(mc.mg_hi,"\u2514 \u22653 leads \u00b7 passed gate","\u2265"+gate+"% install conversion")+
+   mgtile(notMG,"Not getting MG","\u22653 leads \u00b7 below "+gate+"% gate","var(--neg)")+
+  '</div></div>'+
+  '<div class=card style="margin-top:14px"><div class=ch2>MG payout cohorts \u00b7 PRE vs POST</div><div class=csub>each cohort\u2019s full funnel \u00b7 mini funnel = POST shape \u00b7 all % of received</div>'+
+   cohortMatrix(mg.map(function(c){return {label:c.label,csps:c.csps,data:c.data};}))+'</div>';
+ document.getElementById('tmg').innerHTML=hmg;
  /* ---- TAB 4: grouped bars + heatmaps ---- */
  var t4=D.tab4||{},daily=t4.daily||[];
  var h4='';
@@ -442,7 +462,7 @@ function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}
  else document.getElementById('asof').textContent='data warming up… (first load after deploy takes ~10 min)';
 }).catch(function(e){document.getElementById('t1').innerHTML='<div class="card err">Could not reach live data ('+e+'). Retrying…</div>';});}
 boot();setInterval(boot,300000);
-document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');['t1','t2','t3','t4'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==b.dataset.t);});};});
+document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');['t1','t2','t3','tmg','t4'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==b.dataset.t);});};});
 document.querySelectorAll('.gtab').forEach(function(b){b.onclick=function(){if(b.dataset.g==='csp'&&(!RAW||!RAW.csp)){return;}document.querySelectorAll('.gtab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');GRAIN=b.dataset.g;if(RAW)render(RAW);};});
 document.querySelectorAll('.htab').forEach(function(b){b.onclick=function(){var need=(b.dataset.h==='nogh');if(need&&(!RAW||!(GRAIN==='csp'?RAW.csp_noGH:RAW.noGH))){return;}document.querySelectorAll('.htab').forEach(function(x){x.classList.remove('on');});b.classList.add('on');GH=b.dataset.h;if(RAW)render(RAW);};});
 </script></body></html>
