@@ -152,6 +152,7 @@ var STAGES=[
  {k:'slot',nm:'Slot proposed <span class=mb>MBG</span>'},
  {k:'confirm',nm:'Cx confirmed'},
  {k:'assign',nm:'Tech assigned <span class=mb>MBG</span>'},
+ {k:'reached',nm:'Reached home'},
  {k:'install',nm:'Installed'}];
 var METRICS=[
  {k:'recv_d', lab:'Bookings <span class=of>/ day (grey = total)</span>', fmt:function(v){return v==null?'—':v;}, good:'up', abs:'received'},
@@ -168,7 +169,7 @@ function prep(blk,fixedDays){ // recv_d + ALL stage %s rebased on received
   if(m.csp_days&&m.csps)m.recv_d=Math.round(m.received*m.csps/m.csp_days);
   else if(fixedDays)m.recv_d=Math.round(m.received/fixedDays);
   m.slot_pct=pct(m.slot,m.received);m.confirm_pct=pct(m.confirm,m.received);
-  m.assign_pct=pct(m.assign,m.received);m.install_pct=pct(m.install,m.received);});
+  m.assign_pct=pct(m.assign,m.received);m.reached_pct=pct(m.reached,m.received);m.install_pct=pct(m.install,m.received);});
  return blk;
 }
 
@@ -321,6 +322,7 @@ var MXROWS=[
  {lab:'Slot proposed %', k:'slot_pct', abs:'slot', good:'up'},
  {lab:'Cx confirmed %', k:'confirm_pct', abs:'confirm', good:'up'},
  {lab:'Tech assigned %', k:'assign_pct', abs:'assign', good:'up'},
+ {lab:'Reached home %', k:'reached_pct', abs:'reached', good:'up'},
  {lab:'Installed %', k:'install_pct', abs:'install', good:'up'},
  {lab:'TAT accept', k:'tat_ta', tat:1, good:'down'},
  {lab:'TAT confirm→assign', k:'tat_ca', tat:1, good:'down'},
@@ -353,7 +355,7 @@ function cohortMatrix(groups){
        '<td class=poc><span class=pa>'+n(qa2)+'</span><sup>'+dl(pp,qp,r.good)+'</sup><span class=sb2>'+(qp==null?'—':qp+'%')+'</span></td>';}
    }});
   s+='</tr>';});
- return s+'</tbody></table></div>';
+ return s+'</tbody></table><div style="font-size:11px;color:var(--faint);padding:8px 4px 2px;line-height:1.5"><b>Bookings = 100%</b> — the base of every journey. Its <b>▲/▼</b> is <b>booking-volume</b> change vs PRE (not a share). Every stage below is the % of those bookings that reached it.</div></div>';
 }
 function mergedTable(E,N){
  var CSP=(GRAIN==='csp');
