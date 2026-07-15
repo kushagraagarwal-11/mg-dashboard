@@ -140,7 +140,7 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
 </div>
 <div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=tmg class=hide></div><div id=t4 class=hide></div>
 <script>
-var API='https://web-production-9f444.up.railway.app/data4';
+var API='./data4.json';   /* static, refreshed every 30 min by mg-dashboard-generator GitHub Action */
 function n(v){return v==null?'—':Number(v).toLocaleString('en-IN');}
 function ft(m){if(m==null)return '—';return m<90?Math.round(m)+'m':(m/60).toFixed(1)+'h';}
 var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -250,7 +250,7 @@ function heatmapDual(bk,iev,ibk){
  function kmap(cells){var k={};(cells||[]).forEach(function(x){k[x.hr+'|'+x.d]=(k[x.hr+'|'+x.d]||0)+x.n;});return k;}
  HM={days:days,kb:kmap(bk),kiev:kmap(iev),kibk:kmap(ibk||iev),WD:WD,WDN:WDN};
  return '<div class=card><div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px"><div><div class=ch2>Bookings &amp; installs · hour × day</div>'+
-  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <b>Both</b> = <span style="color:var(--brand)">installs</span>/bookings from that cell&#39;s own bookings (matures) · <b>Installs</b> = installs <b>completed</b> that day (event-day, matches the bar chart) · <b>click a cell for the lead journeys</b></div></div>'+
+  '<div class=csub>IST · columns tinted by weekday — same colour = same weekday · <b>Both</b> = <span style="color:var(--brand)">installs</span>/bookings from that cell&#39;s own bookings (matures) · <b>Installs</b> = installs <b>completed</b> that day (event-day, matches the bar chart)</div></div>'+
   '<select id=hmmode onchange="renderHM(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink);background:var(--card)">'+
   '<option value=both>Both (booking · install)</option><option value=booking>Bookings</option><option value=install>Installs</option></select></div>'+
   '<div id=hmbox></div></div>';
@@ -284,8 +284,14 @@ function renderHM(mode){
  s+='<tr class=totr><td class=hr style="color:var(--ink);font-weight:800">Total</td>'+days.map(function(d){var m=meta(d);return '<td class=tot style="background:'+WD[m.wd]+'">'+cell(ctb[d],cti[d])+'</td>';}).join('')+'<td class=tot>'+cell(gtb,gti)+'</td></tr></tbody></table></div>';
  document.getElementById('hmbox').innerHTML=s;
 }
-var LEAD_API=API.replace('/data4','/data4lead');
+var LEAD_API=null;   /* live drill needs a server; wall retired for the $0 static backend */
 function showDrill(d,hr){
+ if(!LEAD_API){
+  var o2=document.getElementById('drillov')||document.createElement('div');o2.id='drillov';
+  o2.style.cssText='position:fixed;inset:0;background:rgba(22,16,33,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px';
+  o2.onclick=function(e){if(e.target===o2)o2.remove();};document.body.appendChild(o2);
+  o2.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:520px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)"><div class=ch2>Lead-journey drill-down paused</div><div class=csub>The dashboard now runs on a $0 static backend (refreshed every 30 min). Clicking into individual lead journeys needs a live server, being restored separately — the funnels, matrices and heatmaps above are all live.</div></div>';
+  return;}
  var ov=document.getElementById('drillov');
  if(!ov){ov=document.createElement('div');ov.id='drillov';
   ov.style.cssText='position:fixed;inset:0;background:rgba(22,16,33,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto';
@@ -471,7 +477,7 @@ function render(D0){RAW=D0;var D=gd(D0);
   var td=e.target.closest?e.target.closest('td.dr'):null;
   if(td)showDrill(td.getAttribute('data-d'),td.getAttribute('data-hr'));};
 }
-function boot(){fetch(API,{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+function boot(){fetch(API+'?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
  if(d&&d.tab1)render(d);
  else document.getElementById('asof').textContent='data warming up… (first load after deploy takes ~10 min)';
 }).catch(function(e){document.getElementById('t1').innerHTML='<div class="card err">Could not reach live data ('+e+'). Retrying…</div>';});}
