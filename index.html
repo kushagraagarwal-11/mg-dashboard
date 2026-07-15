@@ -441,8 +441,8 @@ function render(D0){RAW=D0;var D=gd(D0);
  /* ---- TAB MG: payout cohorts ---- */
  var MGP=(MGMODE==='projected'),gate=(RAW&&RAW.mg_gate)||60,rem=(RAW&&RAW.month_remaining)||0,ted=(RAW&&RAW.too_early_days)||7;
  var mg=(MGP?(D.tab_mg_proj||[]):(D.tab_mg||[]));
- var mc=(RAW&&(MGP?RAW.mgp_counts:RAW.mg_counts))||{mg_lo:0,mg_hi:0,no_mg:0,too_early:0};
- var pt=(RAW&&RAW.mg_proj_totals)||{};
+ var mc=((MGP?D.mgp_counts:D.mg_counts))||{mg_lo:0,mg_hi:0,no_mg:0,too_early:0};   /* D = grain+flow-swapped: gate follows Exclude G,H */
+ var pt=(D.mg_proj_totals)||{};
  var getMG=(mc.mg_lo||0)+(mc.mg_hi||0),notMG=(mc.no_mg||0),tooE=(mc.too_early||0),totMG=getMG+notMG+tooE;
  function mgtile(big,lab,sub,col){return '<div style="flex:1;min-width:140px"><div style="font-size:29px;font-weight:800;color:'+(col||'var(--ink)')+'">'+n(big)+(totMG?' <span style=\'font-size:13px;color:var(--faint)\'>'+Math.round(100*big/totMG)+'%</span>':'')+'</div><div style="font-size:12.5px;font-weight:700;color:#4A4258;margin-top:2px">'+lab+'</div>'+(sub?'<div style="font-size:11px;color:var(--faint);margin-top:1px">'+sub+'</div>':'')+'</div>';}
  function mgt2(big,lab){return '<div style="flex:1;min-width:130px"><div style="font-size:24px;font-weight:800;color:var(--ink)">'+n(big)+'</div><div style="font-size:12px;font-weight:700;color:var(--faint);margin-top:2px">'+lab+'</div></div>';}
