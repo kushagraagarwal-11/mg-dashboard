@@ -140,7 +140,7 @@ table.hm{border-collapse:collapse;font-size:12px;width:100%}
 </div>
 <div id=t1></div><div id=t2 class=hide></div><div id=t3 class=hide></div><div id=tmg class=hide></div><div id=t4 class=hide></div>
 <script>
-var API='./data4.json';   /* static, refreshed every 30 min by mg-dashboard-generator GitHub Action */
+var API='./data4.json';   /* static, auto-refreshed by mg-dashboard-generator GitHub Action */
 function n(v){return v==null?'—':Number(v).toLocaleString('en-IN');}
 function ft(m){if(m==null)return '—';return m<90?Math.round(m)+'m':(m/60).toFixed(1)+'h';}
 var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -290,7 +290,7 @@ function showDrill(d,hr){
   var o2=document.getElementById('drillov')||document.createElement('div');o2.id='drillov';
   o2.style.cssText='position:fixed;inset:0;background:rgba(22,16,33,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px';
   o2.onclick=function(e){if(e.target===o2)o2.remove();};document.body.appendChild(o2);
-  o2.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:520px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)"><div class=ch2>Lead-journey drill-down paused</div><div class=csub>The dashboard now runs on a $0 static backend (refreshed every 30 min). Clicking into individual lead journeys needs a live server, being restored separately — the funnels, matrices and heatmaps above are all live.</div></div>';
+  o2.innerHTML='<div style="background:var(--card);border-radius:16px;max-width:520px;width:100%;padding:22px 24px;box-shadow:0 20px 60px rgba(22,16,33,.4)"><div class=ch2>Lead-journey drill-down paused</div><div class=csub>The dashboard now runs on a $0 static backend (auto-refreshed through the day). Clicking into individual lead journeys needs a live server, being restored separately — the funnels, matrices and heatmaps above are all live.</div></div>';
   return;}
  var ov=document.getElementById('drillov');
  if(!ov){ov=document.createElement('div');ov.id='drillov';
@@ -408,7 +408,7 @@ function gd(D){
   return r;
 }
 function render(D0){RAW=D0;var D=gd(D0);
- document.getElementById('asof').innerHTML='<b>Live</b> · refreshed every 30 min · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
+ document.getElementById('asof').innerHTML='<b>Live</b> · auto-refreshed · generated '+D.generated+'<br>'+n(D.enrolled)+' enrolled MG CSPs · '+n(D.targeted)+' banner-targeted';
  document.getElementById('winnote').innerHTML='Windows are <b>per-CSP anchored</b>: POST = each CSP&#39;s own days since its enrolment date (up to '+fd(D.yest)+') · PRE = the same number of days immediately before enrolment · non-enrolled CSPs anchored at MG launch (1 Jul) · <b>all stage % = share of bookings received, matured within 48h (same cap both sides)</b>'+
   (GRAIN==='csp'?' \u00b7 <span style=\"color:var(--brand);font-weight:800\">CSP-level: a booking counts once per CSP it reached; each judged on its own furthest stage, 48h from when it received the booking</span>':' \u00b7 booking-level: one row per booking (final CSP)')+(GH==='nogh'?' \u00b7 <span style=\"color:var(--warm);font-weight:800\">excluding G &amp; H flows (no-fee bookings)</span>':'')+'.';
  var t1=D.tab1||{},E=prep(t1.enr||{}),N=prep(t1.non||{},t1.non_days);
